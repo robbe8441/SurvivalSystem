@@ -1,71 +1,31 @@
 ----- Modules -----
 local DatastoreModule = require(script.Parent.Datastore)
 local Events = require(script.Parent.Events)
-
---------------------------------- // Classes \\ ---------------------------------
-
-type ItemClass = {
-    itemId : number,
-    count : number,
-    expiration : number?
-}
-
-type PlayerClass = {
-    Health : number,
-    Food : number,
-    Expirience : number,
-    Level : number,
-    Inventory : {ItemClass},
-
-    MaxHealth : number,
-    Walkspeed : number,
-    MaxWeight : number,
-    Stamina : number,
-    MaxFood : number,
-
-    new : (Player) -> (PlayerClass),
-    Destroy : () -> (),
-    SaveData : () -> (PlayerClass),
-
-    GiveXP : (number) -> (number, number),
-    ChangeHealth : (number) -> number,
-
-    HealthChanged : Events.EventClass
-}
-
-
+local GlobalVal = require(game.ReplicatedStorage.Modules.GlobalValues)
 
 --------------------------------- // Variables \\ ---------------------------------
 
-local Player = {} :: PlayerClass
+local DefaultPlayerData = GlobalVal.DefaultPlayerData
+local Player = {} :: GlobalVal.PlayerClass
 Player.__index = Player
 Player.PlayerList = {}
 
 
-local DefaultPlayerData = {
-    Health = 100,
-    Food = 100,
-    Expirience = 0,
-    Level = 0,
-    Inventory = {},
-
-    MaxHealth = 100,
-    Walkspeed = 20,
-    MaxWeight = 100,
-    Stamina = 100,
-    MaxFood = 100
-}
+local SendDataRemote = game.ReplicatedStorage:FindFirstChild("UpdatePlayerDataRemote") or Instance.new("RemoteEvent")
+SendDataRemote.Parent = game.ReplicatedStorage
+SendDataRemote.Name = "UpdatePlayerDataRemote"
 
 
 local IgnoreOnSave = {
-    "HealthChanged"
+    "HealthChanged",
+    "UserId",
 }
 
 
 --------------------------------- // HandleData \\ ---------------------------------
 
 
-function Player.new(Plr : Player) : PlayerClass
+function Player.new(Plr : Player) : GlobalVal.PlayerClass
     local Datastore = DatastoreModule.new("PlayerData", Plr.UserId)
 
     while Datastore.State == false do
@@ -75,8 +35,7 @@ function Player.new(Plr : Player) : PlayerClass
     Datastore.Value = DefaultPlayerData --- // Overwrite data for testing
 
     local data = Datastore.Value
-    
-    -- // Add some values
+
     data.HealthChanged = Events.new()
     data.UserId = Plr.UserId
 
@@ -85,6 +44,7 @@ function Player.new(Plr : Player) : PlayerClass
 
     return data
 end
+
 
 
 function Player:SaveData()
@@ -108,7 +68,7 @@ function Player:Destroy()
 end
 
 
-function Player.FindPlayer(Val : string | number) : (PlayerClass & typeof(Player))?
+function Player.FindPlayer(Val : string | number) : (GlobalVal.PlayerClass & typeof(Player))?
     local id = type(Val) == "number" and Val or game.Players:FindFirstChild(Val)
     if not id then return end
 
@@ -118,6 +78,25 @@ end
 
 
 --------------------------------- // Functions \\ ---------------------------------
+
+function Player:OnUpdate(DeltaTime)
+    local Change = DeltaTime * self.Stress
+
+    self.Food = math.clamp(self.Food - Change, 0, self.MaxFood)
+    self.Water = math.clamp(self.Water - Change, 0, self.MaxFood)
+
+    local TemperatureIsRight = self.Tempearture > 30 and self.Tempearture < 40
+
+    if self.Food <= 0 or self.Water <= 0 or not TemperatureIsRight then 
+        self:ChangeHealth(-Change)
+    end
+
+    local plr = game.Players:GetPlayerByUserId(self.UserId)
+    if not plr then return end
+    SendDataRemote:FireClient(plr, self)
+end
+
+
 
 function Player:GiveXP(ammout : number)
     local NextLevelXP = (self.Level * 100) ^ 0.8
@@ -134,14 +113,11 @@ end
 
 
 function Player:ChangeHealth(ammout : number)
-    self.Health = math.clamp(self.Health, 0, self.MaxHealth)
+    self.Health = math.clamp(self.Health + ammout, 0, self.MaxHealth)
     self.HealthChanged:Fire()
 
     return self.Health
 end
-
-
-
 
 
 return Player

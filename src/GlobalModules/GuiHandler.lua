@@ -3,6 +3,7 @@ local BaseColor= Color3.fromRGB(255, 255, 255)
 local Plr = game.Players.LocalPlayer
 local Gui = Plr:WaitForChild("PlayerGui"):WaitForChild("MainGui")
 local StatsFrame = Gui:WaitForChild("PlayerStats")
+local HurtCam : ImageLabel = Gui:WaitForChild("HurtCam")
 
 
 Module.Values = {
@@ -24,10 +25,11 @@ end
 
 function Module.UpdateGui()
     for i,v in pairs(Module.Values) do
-        v.val = math.random()
         local Frame = StatsFrame:WaitForChild(v.name)
         Frame:WaitForChild("UIGradient").Color = GetNumberSeq(v)
     end
+
+    HurtCam.ImageTransparency = Module.Values.Health.val
 end
 
 

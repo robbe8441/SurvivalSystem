@@ -1,18 +1,20 @@
 local Modules = game.ServerStorage.Modules
 
 local PlayerModule = require(Modules.PlayerModule)
+local Global = require(game.ReplicatedStorage.Modules.GlobalValues)
 
 
 function OnPlayerAdded(Plr : Player)
     local Player = PlayerModule.new(Plr)
+    print(Player)
 end
 
 
 local XPPart = Instance.new("Part", workspace)
+XPPart.Position = Vector3.new(0,0,10)
 
 
 XPPart.Touched:Connect(function(hit)
-
     local Plr = game.Players:GetPlayerFromCharacter(hit.Parent)
     if not Plr then return end
 
@@ -24,4 +26,17 @@ XPPart.Touched:Connect(function(hit)
 end)
 
 
+function OnUpdate(Dt)
+    for i, Plr : Global.PlayerClass in PlayerModule.PlayerList do
+        Plr:OnUpdate(1)
+    end
+end
+
 game.Players.PlayerAdded:Connect(OnPlayerAdded)
+
+while true do
+    local Dt = task.wait(1)
+    OnUpdate(1)
+end
+
+
