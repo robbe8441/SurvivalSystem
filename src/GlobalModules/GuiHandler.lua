@@ -1,35 +1,50 @@
 local Module = {}
-local BaseColor= Color3.fromRGB(255, 255, 255)
+local Global = require(game.ReplicatedStorage.Modules.GlobalValues)
+
 local Plr = game.Players.LocalPlayer
 local Gui = Plr:WaitForChild("PlayerGui"):WaitForChild("MainGui")
 local StatsFrame = Gui:WaitForChild("PlayerStats")
 local HurtCam : ImageLabel = Gui:WaitForChild("HurtCam")
-
+local InventoryFrame : Frame = Gui:WaitForChild("Inventory")
+local ItemTemp : ImageLabel = game.ReplicatedStorage:WaitForChild("ItemTemp")
 
 Module.Values = {
-    Health =    {val = 0.5, color = Color3.new(1, 0, 0.0156863),	        name = "5Helath"},
-    Food =      {val = 0.5, color = Color3.new(0.0156863, 1, 0), 	        name = "4Food"},
-	Stamina =   {val = 0.5, color = Color3.new(0.984314, 1, 0.00784314), 	name = "3Stamina"},
-    XP =        {val = 0.5,	color = Color3.new(0, 0.984314, 1), 		    name = "1Xp"},
-    Weight =    {val = 0.5,	color = Color3.new(1, 0.65098, 0.2509803),     name = "2Weight"}
+    Health =    {val = 1, name = "6Helath"},
+    Water =     {val = 1, name = "5Water"},
+    Food =      {val = 1, name = "4Food"},
+	Stamina =   {val = 1, name = "3Stamina"},
+    Weight =    {val = 1, name = "2Weight"},
+    XP =        {val = 1, name = "1Xp"}
 }
 
-function GetNumberSeq(v)
-    local k1 = ColorSequenceKeypoint.new(0, v.color)
-    local k2 = ColorSequenceKeypoint.new(math.clamp(v.val-0.05, 0.001, 0.98), v.color)
-    local k3 = ColorSequenceKeypoint.new(math.clamp(v.val+0.05, 0.002, 0.99), BaseColor)
-    local k4 = ColorSequenceKeypoint.new(1, BaseColor)
 
-    return ColorSequence.new{k1, k2, k3, k4}
+function Module.UpdateInv(Inventory)
+    for i,v in InventoryFrame:GetChildren() do
+        if v:IsA("ImageLabel") then v:Destroy() end
+    end
+
+    for i,v : Global.ItemClass in Inventory do
+        local item = ItemTemp:Clone()
+        local temp = Global.Items[v.itemId]
+
+        item.Parent = InventoryFrame
+        item.Image = "rbxassetid://".. temp.assetId
+        item.Count.Text = v.count
+    
+    end
 end
+
+
 
 function Module.UpdateGui()
     for i,v in pairs(Module.Values) do
         local Frame = StatsFrame:WaitForChild(v.name)
-        Frame:WaitForChild("UIGradient").Color = GetNumberSeq(v)
+        Frame:WaitForChild("UIGradient").Offset = Vector2.new(0,-v.val)
     end
 
-    HurtCam.ImageTransparency = Module.Values.Health.val
+    local HurtCamVal = Module.Values.Health.val + (math.sin(os.clock() * 4) + 1) / 10
+    local val = math.clamp(HurtCamVal, 0,1)
+    HurtCam.ImageTransparency = val
 end
 
 
