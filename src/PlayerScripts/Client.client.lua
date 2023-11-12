@@ -1,12 +1,18 @@
+local Runnservice = game:GetService("RunService")
 
 local Modules = game.ReplicatedStorage.Modules
 local GuiHandler = require(Modules.GuiHandler)
 local GlobalVals = require(Modules.GlobalValues)
+local Camera = require(Modules.Camera)
+
+local plr = game.Players.LocalPlayer
+local Char = plr.Character or plr.CharacterAdded:Wait()
+
+local cam = Camera.new(Char.PrimaryPart)
 
 local UpdateEvent : RemoteEvent = game.ReplicatedStorage:WaitForChild("UpdatePlayerDataRemote")
-
-local Runnservice = game:GetService("RunService")
 local PlayerData : GlobalVals.PlayerClass = table.clone(GlobalVals.DefaultPlayerData)
+
 
 
 function lerp(a, b, t)
@@ -15,7 +21,9 @@ end
 
 
 
-Runnservice.Heartbeat:Connect(function(DeltaTime)
+Runnservice.PreRender:Connect(function(DeltaTime)
+    cam:Update(DeltaTime)
+
     for i,v in GuiHandler.Values do
         local stat = PlayerData[i]
         if not stat then continue end

@@ -127,14 +127,14 @@ TaskManager.__shared = {
 			taskManager.Last = nil
 			if taskManager.__public.Running == nil then taskManager.__public.Tasks = 0 else taskManager.__public.Tasks = 1 end
 			while proxy ~= nil do
-				local synchronousTask = getmetatable(proxy)
+				local synchronousTask = getmetatable(proxy or {})
 				proxy, synchronousTask.Active, synchronousTask.__public.TaskManager, synchronousTask.Previous, synchronousTask.Next = synchronousTask.Next, false, nil, nil, nil
 			end
 		else
 			if type(func) ~= "function" then error("Attempt to CancelAll failed: Passed value is not nil or function", 3) end
 			local proxy = taskManager.First
 			while proxy ~= nil do
-				local synchronousTask = getmetatable(proxy)
+				local synchronousTask = getmetatable(proxy or {})
 				if synchronousTask.Function == func then
 					taskManager.__public.Tasks -= 1
 					if taskManager.First == proxy then taskManager.First = synchronousTask.Next end

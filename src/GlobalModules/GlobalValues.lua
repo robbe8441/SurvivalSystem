@@ -1,8 +1,9 @@
 ------------------------------- // Classes \\ -------------------------------
 
 export type EventClass = {
+    __index : any,
     new : () -> EventClass,
-    Connect: (func: () -> ()) -> (),
+    Connect: (self:EventClass,func: () -> ()) -> (),
     Fire: (self:EventClass) -> ()
 }
 
@@ -13,6 +14,7 @@ export type ItemClass = {
 }
 
 export type PlayerClass = {
+    __index : any,
     Health : number,
     Food : number,
     Water : number,
@@ -33,7 +35,7 @@ export type PlayerClass = {
 
     new : (Player : Player) -> (PlayerClass),
     OnUpdate : (self:PlayerClass, DeltaTime : number) -> (),
-    Destroy : () -> (),
+    Destroy : (self:PlayerClass) -> (),
     SaveData : (self : PlayerClass) -> (),
 
     GiveXP : (self:PlayerClass, ammount : number) -> (number, number),
@@ -41,7 +43,9 @@ export type PlayerClass = {
 
     AddToInventory : (self:PlayerClass, ItemId : number, count:number?) -> (),
     RemoveFromInventory : (self:PlayerClass, ItemId : number, count:number?) -> (boolean),
-    CalculateWeight : () -> (),
+    CalculateWeight : (self:PlayerClass) -> (number),
+
+    FindPlayer : (Val : string | number) -> (PlayerClass),
 
     PlayerList : {PlayerClass},
     HealthChanged : EventClass,
@@ -63,7 +67,7 @@ module.DefaultPlayerData = {
     Weight = 10,
     
     Tempearture = 37,
-    Stress = 5,
+    Stress = 0.5,
     Inventory = {},
 
     MaxHealth = 100,
@@ -75,13 +79,6 @@ module.DefaultPlayerData = {
 
 
 
-type ItemTemplate = {
-    Weight : number,
-    Name : string,
-    assetId : string,
-    MaxStack : number,
-    expiration : number?
-}
 
 
 

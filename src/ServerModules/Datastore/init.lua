@@ -19,7 +19,7 @@ local base = #characters + 1
 export type Constructor = {
 	new: (name: string, scope: string | number, key: string?) -> DataStore,
 	hidden: (name: string, scope: string, key: string?) -> DataStore,
-	find: (name: string, scope: string, key: string?) -> DataStore?,
+	find: (name: string, scope: any, key: any) -> DataStore?,
 	Response: {Success: string, Saved: string, Locked: string, State: string, Error: string},
 }
 

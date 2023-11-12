@@ -1,12 +1,15 @@
 local Module = {}
 local Global = require(game.ReplicatedStorage.Modules.GlobalValues)
+local UIS = game:GetService("UserInputService")
 
 local Plr = game.Players.LocalPlayer
 local Gui = Plr:WaitForChild("PlayerGui"):WaitForChild("MainGui")
 local StatsFrame = Gui:WaitForChild("PlayerStats")
-local HurtCam : ImageLabel = Gui:WaitForChild("HurtCam")
+local HurtCam : any = Gui:WaitForChild("HurtCam")
 local InventoryFrame : Frame = Gui:WaitForChild("Inventory")
-local ItemTemp : ImageLabel = game.ReplicatedStorage:WaitForChild("ItemTemp")
+local MyInventory = InventoryFrame:WaitForChild("MyItems")
+
+local ItemTemp : any = game.ReplicatedStorage:WaitForChild("ItemTemp")
 
 Module.Values = {
     Health =    {val = 1, name = "6Helath"},
@@ -19,7 +22,7 @@ Module.Values = {
 
 
 function Module.UpdateInv(Inventory)
-    for i,v in InventoryFrame:GetChildren() do
+    for i,v in MyInventory:GetChildren() do
         if v:IsA("ImageLabel") then v:Destroy() end
     end
 
@@ -27,19 +30,17 @@ function Module.UpdateInv(Inventory)
         local item = ItemTemp:Clone()
         local temp = Global.Items[v.itemId]
 
-        item.Parent = InventoryFrame
+        item.Parent = MyInventory
         item.Image = "rbxassetid://".. temp.assetId
         item.Count.Text = v.count
     
     end
 end
 
-
-
 function Module.UpdateGui()
     for i,v in pairs(Module.Values) do
         local Frame = StatsFrame:WaitForChild(v.name)
-        Frame:WaitForChild("UIGradient").Offset = Vector2.new(0,-v.val)
+        Frame:FindFirstChildWhichIsA("UIGradient").Offset = Vector2.new(0,-v.val)
     end
 
     local HurtCamVal = Module.Values.Health.val + (math.sin(os.clock() * 4) + 1) / 10
@@ -47,6 +48,13 @@ function Module.UpdateGui()
     HurtCam.ImageTransparency = val
 end
 
+
+
+UIS.InputBegan:Connect(function(input, gpe)
+    if input.KeyCode == Enum.KeyCode.I then 
+        InventoryFrame.Visible = not InventoryFrame.Visible
+    end
+end)
 
 
 return Module

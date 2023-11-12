@@ -68,14 +68,12 @@ function Player:Destroy()
 end
 
 
-function Player.FindPlayer(Val : string | number) : (GlobalVal.PlayerClass & typeof(Player))?
+function Player.FindPlayer(Val : string | number) : GlobalVal.PlayerClass | nil
     local id = type(Val) == "number" and Val or game.Players:FindFirstChild(Val)
     if not id then return end
 
     return Player.PlayerList[id]
 end
-
-
 
 --------------------------------- // Functions \\ ---------------------------------
 
@@ -156,7 +154,10 @@ function Player:RemoveFromInventory(itemId:number, count:number?) : boolean
         if v.itemId ~= itemId then continue end
         if count == v.count then self.Inventory[i] = nil; break end
         if count > v.count then self.Inventory[i] = nil; count -= v.count continue end
+        local Remove = v.count
         v.count -= count
+        count -= Remove
+        if count <= 0 then break end
     end
 
     self:CalculateWeight()
@@ -173,6 +174,7 @@ function Player:CalculateWeight()
     end
 
     self.Weight = weight
+    return weight
 end
 
 
