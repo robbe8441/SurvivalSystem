@@ -7,14 +7,12 @@ local Global = require(game.ReplicatedStorage.Modules.GlobalValues)
 function OnPlayerAdded(Plr : Player)
     local Player = PlayerModule.new(Plr)
 
-    Player:AddToInventory(1, 500)
-    print(Player.Inventory)
+    Player.Inventory:AddToInventory(1, 20)
 
-    local succ = Player:RemoveFromInventory(1, 5)
+    Player.Inventory:RemoveFromInventory(1, 5)
+    Player.Inventory:AddToInventory(2, 10)
 
-    task.wait(5)
-    local succ = Player:RemoveFromInventory(1, 400)
-    warn(succ)
+    print(Player)
 end
 
 
@@ -43,7 +41,7 @@ end
 game.Players.PlayerAdded:Connect(OnPlayerAdded)
 
 while true do
-    local Dt = task.wait(0.3)
+    local Dt = task.wait(1)
     OnUpdate(1)
 end
 

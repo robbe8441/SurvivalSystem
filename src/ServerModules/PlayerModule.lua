@@ -2,6 +2,7 @@
 local DatastoreModule = require(script.Parent.Datastore)
 local Events = require(script.Parent.Events)
 local GlobalVal = require(game.ReplicatedStorage.Modules.GlobalValues)
+local InventoryModule = require(script.Parent.Inventory)
 
 --------------------------------- // Variables \\ ---------------------------------
 
@@ -38,6 +39,7 @@ function Player.new(Plr : Player) : GlobalVal.PlayerClass
 
     data.HealthChanged = Events.new()
     data.UserId = Plr.UserId
+    data.Inventory = InventoryModule.new()
 
     setmetatable(data, Player)
     Player.PlayerList[Plr.UserId] = data
@@ -115,66 +117,6 @@ function Player:ChangeHealth(ammout : number)
     self.HealthChanged:Fire()
 
     return self.Health
-end
-
-
-
---------------------------------- // Inventory \\ ---------------------------------
-
-
-function Player:AddToInventory(itemId:number, count:number?)
-    count = count or 1
-    local template = GlobalVal.Items[itemId]
-    if not template then warn("Template does not exist") return end
-
-    for i=1, math.floor(count / template.MaxStack) do
-        local item : GlobalVal.ItemClass = {count = template.MaxStack, itemId = itemId}
-        table.insert(self.Inventory, item)
-    end
-
-    local remaining = count - math.floor(count / template.MaxStack) * template.MaxStack
-    if remaining == 0 then self:CalculateWeight() return end
-
-    local item : GlobalVal.ItemClass = {count = remaining, itemId = itemId}
-    table.insert(self.Inventory, item)
-    self:CalculateWeight()
-end
-
-
-function Player:RemoveFromInventory(itemId:number, count:number?) : boolean
-    local OwnedItems = 0
-    for i,v in self.Inventory do
-        if v.itemId ~= itemId then continue end
-        OwnedItems += v.count
-    end
-
-    if OwnedItems < count then return false end
-
-    for i,v in self.Inventory do
-        if v.itemId ~= itemId then continue end
-        if count == v.count then self.Inventory[i] = nil; break end
-        if count > v.count then self.Inventory[i] = nil; count -= v.count continue end
-        local Remove = v.count
-        v.count -= count
-        count -= Remove
-        if count <= 0 then break end
-    end
-
-    self:CalculateWeight()
-    return true
-end
-
-
-function Player:CalculateWeight()
-    local weight = 0
-
-    for i,v in self.Inventory do
-        local temp = GlobalVal.Items[v.itemId]
-        weight += temp.Weight * v.count
-    end
-
-    self.Weight = weight
-    return weight
 end
 
 

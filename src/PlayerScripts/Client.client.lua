@@ -1,5 +1,6 @@
 local Runnservice = game:GetService("RunService")
 
+
 local Modules = game.ReplicatedStorage.Modules
 local GuiHandler = require(Modules.GuiHandler)
 local GlobalVals = require(Modules.GlobalValues)
@@ -9,6 +10,7 @@ local plr = game.Players.LocalPlayer
 local Char = plr.Character or plr.CharacterAdded:Wait()
 
 local cam = Camera.new(Char.PrimaryPart)
+cam.CameraOffset = Vector3.new(0,0,0)
 
 local UpdateEvent : RemoteEvent = game.ReplicatedStorage:WaitForChild("UpdatePlayerDataRemote")
 local PlayerData : GlobalVals.PlayerClass = table.clone(GlobalVals.DefaultPlayerData)
@@ -23,6 +25,8 @@ end
 
 Runnservice.PreRender:Connect(function(DeltaTime)
     cam:Update(DeltaTime)
+    --GuiHandler.UpdateHudPos(DeltaTime)
+    --GuiHandler.UpdateGuiLines()
 
     for i,v in GuiHandler.Values do
         local stat = PlayerData[i]
@@ -41,5 +45,5 @@ end)
 
 UpdateEvent.OnClientEvent:Connect(function(data : GlobalVals.PlayerClass)
     PlayerData = data
-    GuiHandler.UpdateInv(data.Inventory)
+    GuiHandler.UpdateInv(data.Inventory.Inventory)
 end)

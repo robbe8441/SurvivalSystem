@@ -44,7 +44,7 @@ end
 
 --------------------------------- // Main Camera \\ ---------------------------------
 
-function Camera.new(Subject) 
+function Camera.new(Subject) : CameraClass
     cam.CameraType = Enum.CameraType.Scriptable
 
     local res = {
@@ -68,7 +68,14 @@ end
 
 
 function Camera:Update(DeltaTime)
-    UIS.MouseBehavior = Enum.MouseBehavior.LockCenter
+    
+    if UIS:IsKeyDown(Enum.KeyCode.LeftControl) then
+        UIS.MouseBehavior = Enum.MouseBehavior.Default
+    else
+        UIS.MouseBehavior = Enum.MouseBehavior.LockCenter
+    end
+
+
     local Input = GetMouseDelta() * math.rad(self.Sensitivity)
 
     self.xPosition = self.xPosition + Input.X

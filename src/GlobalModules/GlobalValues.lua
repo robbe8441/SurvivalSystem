@@ -13,6 +13,17 @@ export type ItemClass = {
     expiration : number?
 }
 
+export type InventoryClass = {
+    __index : any,
+    new : () -> (InventoryClass),
+    Inventory : {ItemClass},
+    AddToInventory : (self:InventoryClass, itemId:number, count:number?) -> (),
+    RemoveFromInventory : (self:InventoryClass, itemId:number, count:number?) -> boolean,
+    CalculateWeight : (self:InventoryClass) -> number,
+    MoveStack : (self:InventoryClass, NewInv:InventoryClass, index:number) -> (),
+    InventoryChanged : EventClass
+}
+
 export type PlayerClass = {
     __index : any,
     Health : number,
@@ -24,7 +35,7 @@ export type PlayerClass = {
     Tempearture : number,
     Stress : number,
 
-    Inventory : {ItemClass},
+    Inventory : InventoryClass,
 
     MaxHealth : number,
     Walkspeed : number,
@@ -40,10 +51,6 @@ export type PlayerClass = {
 
     GiveXP : (self:PlayerClass, ammount : number) -> (number, number),
     ChangeHealth : (self:PlayerClass, ammount : number) -> number,
-
-    AddToInventory : (self:PlayerClass, ItemId : number, count:number?) -> (),
-    RemoveFromInventory : (self:PlayerClass, ItemId : number, count:number?) -> (boolean),
-    CalculateWeight : (self:PlayerClass) -> (number),
 
     FindPlayer : (Val : string | number) -> (PlayerClass),
 
@@ -86,7 +93,7 @@ module.Items = {
     [1] = {
         Weight = 0.5,
         Name = "Apple",
-        assetId = "8221939340",
+        assetId = "7978712756",
         expiration = 500,
         MaxStack = 10,
     };
@@ -94,7 +101,7 @@ module.Items = {
     [2] = {
         Weight = 0.5,
         Name = "Bannana",
-        assetId = "8860807930",
+        assetId = "14209254217",
         expiration = 500,
         MaxStack = 30,
     };
