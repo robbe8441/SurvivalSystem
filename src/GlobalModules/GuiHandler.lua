@@ -15,8 +15,6 @@ local HurtCam : any = Gui:WaitForChild("HurtCam")
 local InventoryFrame : Frame = Gui:WaitForChild("Inventory")
 local MyInventory = InventoryFrame:WaitForChild("MyItems")
 
-local PickupListFrame = Gui:WaitForChild("PickupItems"):WaitForChild("Scrolling")
-
 local Module = {}
 
 Module.Values = {
@@ -30,7 +28,6 @@ Module.Values = {
 
 
 function Module.UpdateInv(Inventory)
-
     for i,v in MyInventory:GetChildren() do
         if v:IsA("ImageLabel") then v:Destroy() end
     end
@@ -58,87 +55,125 @@ function Module.UpdateGui()
 end
 
 
-
-UIS.InputBegan:Connect(function(input, gpe)
-    if input.KeyCode == Enum.KeyCode.I then 
-        InventoryFrame.Visible = not InventoryFrame.Visible
-    end
-end)
-
-
 --------------------------- // PickupItems \\ ---------------------------
 
-local SelectedItem = 1
-local SelectionsItems = {}
+function lerp(a, b, t)
+    return a + (b - a) * t
+  end
 
-UIS.InputBegan:Connect(function(input, gameProcessedEvent)
-    if input.KeyCode == Enum.KeyCode.Up then
-        SelectedItem -= 1
-    end
+local SelectionWheel = 0
+local PickupPrompts = {}
 
-    if input.KeyCode == Enum.KeyCode.Down then
-        SelectedItem += 1
-    end
+local RadiusSmoothing = 0
+local WheelSmoothing = 0
 
-    if input.KeyCode == Enum.KeyCode.E then
-        local num = 0
+local Line = Instance.new("Frame", Gui)
 
-        for i,v in SelectionsItems do
-            num +=1 
-            if num ~= SelectedItem then continue end
+function drawPath(start, End)
+	local Distance = (start - End).Magnitude
+	Line.AnchorPoint = Vector2.new(0.5, 0.5)
+	Line.Size = UDim2.new(0, Distance, 0, 5)
+	Line.Position = UDim2.new(0, (start.X + End.X) / 2, 0, (start.Y + End.Y) / 2)
+	Line.Rotation = math.atan2(End.Y - start.Y, End.X - start.X) * (180 / math.pi)
+end
 
-            local prompt = i
-            prompt:InputHoldBegin()
-            task.wait()
-            prompt:InputHoldEnd()
+
+
+
+
+function Module.UpdateItems()
+    local TotalItems = #PickupPrompts
+    local ButtonRadius = 90
+    local U = TotalItems * ButtonRadius
+    local Radius = math.max((U / math.pi) / 2, 100)
+    Radius = lerp(RadiusSmoothing, Radius , 0.1)
+    RadiusSmoothing = Radius
+
+    local NewAngle = (SelectionWheel % 360 * TotalItems)
+    if NewAngle ~= NewAngle then NewAngle = 0 end
+    --WheelSmoothing = lerp(WheelSmoothing, NewAngle, 0.3)
+    WheelSmoothing = NewAngle
+
+    local Selection = {centerDis = 1000, index = 0}
+
+    for i,v in PickupPrompts do
+        local Button : TextButton = v.Button
+        Button.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+
+        local Center = workspace.CurrentCamera.ViewportSize
+
+        local Angle = math.rad((360 / TotalItems) * i + WheelSmoothing)
+        local XPos, YPos = math.cos(Angle) * Radius , math.sin(Angle) * Radius 
+
+        Button.Position = UDim2.fromOffset(XPos + Center.X/2 - Button.Size.X.Offset / 2, YPos + Center.Y - Button.Size.Y.Offset / 2)
+        Button.Rotation = math.deg(Angle) + 90
+        if YPos < Selection.centerDis then
+            Selection.centerDis = YPos
+            Selection.index = i
         end
     end
-end)
 
+    local Button= PickupPrompts[Selection.index]
+    if not Button then return end
+    local Button : TextButton = Button.Button
+    Button.BackgroundColor3 = Color3.fromRGB(250, 53, 53)
+
+    local Prompt = PickupPrompts[Selection.index].prompt
+
+    local p1 = Button.AbsolutePosition + Button.AbsoluteSize / 2
+    local p2 = workspace.CurrentCamera:WorldToViewportPoint(Prompt.Parent.Position)
+    p2 = Vector2.new(p2.X, p2.Y)
+    drawPath(p1,p2)
+
+    if UIS:IsKeyDown(Enum.KeyCode.E) then
+        Prompt:InputHoldBegin()
+        task.wait()
+        Prompt:InputHoldEnd()
+    end
+end
 
 
 
 function OnPromptShown(prompt:ProximityPrompt)
-    local NewFrame : TextButton = PicupPromptTemp:Clone()
-    NewFrame.Parent = PickupListFrame
+    local Button : TextButton = PicupPromptTemp:Clone()
+    Button.Parent = Gui
 
-    local StartConnect = NewFrame.MouseButton1Down:Connect(function()
+    Button.MouseButton1Down:Connect(function()
         prompt:InputHoldBegin()
     end)
-
-    local EndConnect = NewFrame.MouseButton1Up:Connect(function()
+    Button.MouseButton1Up:Connect(function()
         prompt:InputHoldEnd()
     end)
 
-    SelectionsItems[prompt] = {
-        StartConnect = StartConnect,
-        EndConnect = EndConnect,
-        NewFrame = NewFrame,
-    }
+    table.insert(PickupPrompts, {prompt = prompt, Button = Button})
+    Module.UpdateItems()
 end
 
 
 function OnPromptHidden(prompt:ProximityPrompt)
-    local data = SelectionsItems[prompt]
-    if not data then return end
+    for i,v in PickupPrompts do
+       if v.prompt ~= prompt then continue end
 
-    data.StartConnect:Disconnect()
-    data.EndConnect:Disconnect()
-    data.NewFrame:Destroy()
-    SelectionsItems[prompt] = nil
+       v.Button:Destroy()
+       table.remove(PickupPrompts, i)
+    end
+    Module.UpdateItems()
 end
 
 PromptService.PromptShown:Connect(OnPromptShown)
 PromptService.PromptHidden:Connect(OnPromptHidden)
 
+UIS.InputBegan:Connect(function(input, gameProcessedEvent)
+    if input.KeyCode == Enum.KeyCode.I then 
+        InventoryFrame.Visible = not InventoryFrame.Visible
+    end
+end)
 
-
-
-
-
-
-
-
+UIS.InputChanged:Connect(function(input, gameProcessedEvent)
+    if input.UserInputType == Enum.UserInputType.MouseWheel then
+        SelectionWheel += input.Position.Z
+    end
+end)
 
 --[[
 --------------------------- // Hud \\ ---------------------------
