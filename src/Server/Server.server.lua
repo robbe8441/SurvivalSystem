@@ -11,8 +11,6 @@ function OnPlayerAdded(Plr : Player)
 
     Player.Inventory:RemoveFromInventory(1, 5)
     Player.Inventory:AddToInventory(2, 10)
-
-    print(Player)
 end
 
 
@@ -35,6 +33,7 @@ end)
 function OnUpdate(Dt)
     for i, Plr : Global.PlayerClass in PlayerModule.PlayerList do
         Plr:OnUpdate(1)
+        Plr.Inventory:AddToInventory(math.random(1,2), math.random(0,3))
     end
 end
 
@@ -42,7 +41,7 @@ game.Players.PlayerAdded:Connect(OnPlayerAdded)
 
 while true do
     local Dt = task.wait(1)
-    OnUpdate(1)
+    OnUpdate(Dt)
 end
 
 

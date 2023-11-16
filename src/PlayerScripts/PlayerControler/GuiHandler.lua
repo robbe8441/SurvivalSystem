@@ -2,6 +2,7 @@ local UIS = game:GetService("UserInputService")
 local PromptService = game:GetService("ProximityPromptService")
 
 local Global = require(game.ReplicatedStorage.Modules.GlobalValues)
+local Input = require(script.Parent.input)
 local ItemTemp : any = game.ReplicatedStorage:WaitForChild("ItemTemp")
 local PicupPromptTemp = game.ReplicatedStorage:WaitForChild("PickupPrompt")
 
@@ -28,6 +29,8 @@ Module.Values = {
 
 
 function Module.UpdateInv(Inventory)
+    if not Inventory then warn("No Inventory Given") return end
+
     for i,v in MyInventory:GetChildren() do
         if v:IsA("ImageLabel") then v:Destroy() end
     end
@@ -35,6 +38,7 @@ function Module.UpdateInv(Inventory)
     for i,v : Global.ItemClass in Inventory do
         local item = ItemTemp:Clone()
         local temp = Global.Items[v.itemId]
+        if not temp then warn("Cant find", v) continue end
 
         item.Parent = MyInventory
         item.Image = "http://www.roblox.com/asset/?id=".. temp.assetId
@@ -160,13 +164,12 @@ function OnPromptHidden(prompt:ProximityPrompt)
     Module.UpdateItems()
 end
 
+
 PromptService.PromptShown:Connect(OnPromptShown)
 PromptService.PromptHidden:Connect(OnPromptHidden)
 
-UIS.InputBegan:Connect(function(input, gameProcessedEvent)
-    if input.KeyCode == Enum.KeyCode.I then 
-        InventoryFrame.Visible = not InventoryFrame.Visible
-    end
+Input.AddSub(Enum.KeyCode.I, "Inventory", "InputBegan"):Connect(function()
+    InventoryFrame.Visible = not InventoryFrame.Visible
 end)
 
 UIS.InputChanged:Connect(function(input, gameProcessedEvent)

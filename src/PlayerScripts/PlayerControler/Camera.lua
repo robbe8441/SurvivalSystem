@@ -7,14 +7,14 @@ export type CameraClass = {
     MaxZoom : number,
     MinZoom : number,
     Sensitivity : number,
-
+    
     xPosition : number,
     yPosition : number,
     Zoom : number,
     ZoomSmoothing : number,
-
+    
     CameraOffset : Vector3,
-
+    
     new : (Subject : BasePart) -> CameraClass,
     Update : (self:CameraClass, DeltaTime:number) -> (),
 }
@@ -22,21 +22,15 @@ export type CameraClass = {
 
 local Camera = {} :: CameraClass
 Camera.__index = Camera
-local UIS = game:GetService("UserInputService")
 local MouseWheelInput = 0
+local Input = require(script.Parent.input)
+local UIS = game:GetService("UserInputService")
+
 
 local cam = workspace.CurrentCamera
 
 --------------------------------- // Functions \\ ---------------------------------
 
-
----- Input ----
-function GetMouseDelta()
-    return UIS:GetMouseDelta()
-end
-
-
----- Math ----
 function lerp(a, b, t)
     return a + (b - a) * t
 end
@@ -68,15 +62,20 @@ end
 
 
 function Camera:Update(DeltaTime)
+    if not self.Subject then
+        local plr = game.Players.LocalPlayer
+        local char = plr.Character or plr.CharacterAdded:Wait()
+        self.Subject = char.PrimaryPart
+    end
     
-    if UIS:IsKeyDown(Enum.KeyCode.LeftControl) then
+    if Input.IsKeyDown(Enum.KeyCode.LeftControl, "Camera") then
         UIS.MouseBehavior = Enum.MouseBehavior.Default
     else
         UIS.MouseBehavior = Enum.MouseBehavior.LockCenter
     end
 
 
-    local Input = GetMouseDelta() * math.rad(self.Sensitivity)
+    local Input = Input:GetMouseDelta() * math.rad(self.Sensitivity)
 
     self.xPosition = self.xPosition + Input.X
     self.yPosition = math.clamp(self.yPosition - Input.Y, math.rad(10), math.rad(170))

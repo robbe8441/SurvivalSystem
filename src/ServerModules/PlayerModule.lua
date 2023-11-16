@@ -1,6 +1,6 @@
 ----- Modules -----
 local DatastoreModule = require(script.Parent.Datastore)
-local Events = require(script.Parent.Events)
+local Events = require(game.ReplicatedStorage.Modules.Events)
 local GlobalVal = require(game.ReplicatedStorage.Modules.GlobalValues)
 local InventoryModule = require(script.Parent.Inventory)
 
@@ -27,15 +27,15 @@ local IgnoreOnSave = {
 
 
 function Player.new(Plr : Player) : GlobalVal.PlayerClass
-    local Datastore = DatastoreModule.new("PlayerData", Plr.UserId)
+--[[    local Datastore = DatastoreModule.new("PlayerData", Plr.UserId)
 
     while Datastore.State == false do
         if Datastore:Open(DefaultPlayerData) ~= DatastoreModule.Response.Success then task.wait(6) end
-    end
+    end]]
 
-    Datastore.Value = DefaultPlayerData --- // Overwrite data for testing
+    --Datastore.Value = DefaultPlayerData --- // Overwrite data for testing
 
-    local data = Datastore.Value
+    local data = table.clone(GlobalVal.DefaultPlayerData)
 
     data.HealthChanged = Events.new()
     data.UserId = Plr.UserId
@@ -43,6 +43,11 @@ function Player.new(Plr : Player) : GlobalVal.PlayerClass
 
     setmetatable(data, Player)
     Player.PlayerList[Plr.UserId] = data
+
+    data.Inventory.InventoryChanged:Connect(function()
+        SendDataRemote:FireClient(Plr, {Inventory = data.Inventory})
+        data.Weight = data.Inventory:CalculateWeight()
+    end)
 
     return data
 end
@@ -80,6 +85,7 @@ end
 --------------------------------- // Functions \\ ---------------------------------
 
 function Player:OnUpdate(DeltaTime)
+    local PrevUpdate = table.clone(self)
     local Change = DeltaTime * self.Stress
 
     self.Food = math.clamp(self.Food - Change, 0, self.MaxFood)
@@ -93,7 +99,14 @@ function Player:OnUpdate(DeltaTime)
 
     local plr = game.Players:GetPlayerByUserId(self.UserId)
     if not plr then return end
-    SendDataRemote:FireClient(plr, self)
+
+    local diff = {}
+    for i,v in self do
+        if PrevUpdate[i] ~= v then diff[i] = v end
+    end
+    
+    diff.Inventory = nil
+    SendDataRemote:FireClient(plr, diff)
 end
 
 
@@ -119,5 +132,10 @@ function Player:ChangeHealth(ammout : number)
     return self.Health
 end
 
+
+SendDataRemote.OnServerEvent:Connect(function(player)
+    local plr = Player.FindPlayer(player.UserId)
+    SendDataRemote:FireClient(player, plr)
+end)
 
 return Player

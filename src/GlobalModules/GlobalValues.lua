@@ -4,7 +4,8 @@ export type EventClass = {
     __index : any,
     new : () -> EventClass,
     Connect: (self:EventClass,func: () -> ()) -> (),
-    Fire: (self:EventClass) -> ()
+    Fire: (self:EventClass) -> (),
+    Disconnect : (self:EventClass, EventId:number) -> ()
 }
 
 export type ItemClass = {
@@ -75,7 +76,7 @@ module.DefaultPlayerData = {
     
     Tempearture = 37,
     Stress = 0.5,
-    Inventory = {},
+    Inventory = {Inventory = {}},
 
     MaxHealth = 100,
     MaxWater = 100,

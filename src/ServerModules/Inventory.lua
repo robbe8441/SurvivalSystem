@@ -1,5 +1,5 @@
 local GlobalVal = require(game.ReplicatedStorage.Modules.GlobalValues)
-local Events = require(script.Parent.Events)
+local Events = require(game.ReplicatedStorage.Modules.Events)
 
 local Inventory = {} :: GlobalVal.InventoryClass
 Inventory.__index = Inventory
@@ -17,9 +17,20 @@ end
 
 
 function Inventory:AddToInventory(itemId:number, count:number?)
+    self.InventoryChanged:Fire()
+
     count = count or 1
     local template = GlobalVal.Items[itemId]
     if not template then warn("Template does not exist") return end
+
+    for i,v in self.Inventory do
+        if v.itemId ~= itemId then continue end
+        local fill = template.MaxStack - v.count
+        v.count = math.min(template.MaxStack, v.count + count)
+        count -= fill
+        if count <= 0 then return end
+    end
+
 
     for i=1, math.floor(count / template.MaxStack) do
         local item : GlobalVal.ItemClass = {count = template.MaxStack, itemId = itemId}
@@ -31,7 +42,6 @@ function Inventory:AddToInventory(itemId:number, count:number?)
 
     local item : GlobalVal.ItemClass = {count = remaining, itemId = itemId}
     table.insert(self.Inventory, item)
-    self.InventoryChanged:Fire()
 end
 
 
