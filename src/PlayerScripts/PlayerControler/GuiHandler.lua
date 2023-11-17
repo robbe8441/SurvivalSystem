@@ -66,27 +66,16 @@ function lerp(a, b, t)
   end
 
 local SelectionWheel = 0
-local PickupPrompts = {}
+Module.PickupPrompts = {}
 
 local RadiusSmoothing = 0
 local WheelSmoothing = 0
 
 local Line = Instance.new("Frame", Gui)
 
-function drawPath(start, End)
-	local Distance = (start - End).Magnitude
-	Line.AnchorPoint = Vector2.new(0.5, 0.5)
-	Line.Size = UDim2.new(0, Distance, 0, 5)
-	Line.Position = UDim2.new(0, (start.X + End.X) / 2, 0, (start.Y + End.Y) / 2)
-	Line.Rotation = math.atan2(End.Y - start.Y, End.X - start.X) * (180 / math.pi)
-end
-
-
-
-
 
 function Module.UpdateItems()
-    local TotalItems = #PickupPrompts
+    local TotalItems = #Module.PickupPrompts
     local ButtonRadius = 90
     local U = TotalItems * ButtonRadius
     local Radius = math.max((U / math.pi) / 2, 100)
@@ -100,7 +89,7 @@ function Module.UpdateItems()
 
     local Selection = {centerDis = 1000, index = 0}
 
-    for i,v in PickupPrompts do
+    for i,v in Module.PickupPrompts do
         local Button : TextButton = v.Button
         Button.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 
@@ -117,17 +106,12 @@ function Module.UpdateItems()
         end
     end
 
-    local Button= PickupPrompts[Selection.index]
+    local Button= Module.PickupPrompts[Selection.index]
     if not Button then return end
     local Button : TextButton = Button.Button
     Button.BackgroundColor3 = Color3.fromRGB(250, 53, 53)
 
-    local Prompt = PickupPrompts[Selection.index].prompt
-
-    local p1 = Button.AbsolutePosition + Button.AbsoluteSize / 2
-    local p2 = workspace.CurrentCamera:WorldToViewportPoint(Prompt.Parent.Position)
-    p2 = Vector2.new(p2.X, p2.Y)
-    drawPath(p1,p2)
+    local Prompt = Module.PickupPrompts[Selection.index].prompt
 
     if UIS:IsKeyDown(Enum.KeyCode.E) then
         Prompt:InputHoldBegin()
@@ -149,17 +133,17 @@ function OnPromptShown(prompt:ProximityPrompt)
         prompt:InputHoldEnd()
     end)
 
-    table.insert(PickupPrompts, {prompt = prompt, Button = Button})
+    table.insert(Module.PickupPrompts, {prompt = prompt, Button = Button})
     Module.UpdateItems()
 end
 
 
 function OnPromptHidden(prompt:ProximityPrompt)
-    for i,v in PickupPrompts do
+    for i,v in Module.PickupPrompts do
        if v.prompt ~= prompt then continue end
 
        v.Button:Destroy()
-       table.remove(PickupPrompts, i)
+       table.remove(Module.PickupPrompts, i)
     end
     Module.UpdateItems()
 end
