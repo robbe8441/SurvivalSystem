@@ -6,15 +6,19 @@ local Input = require(script.Parent.input)
 local ItemTemp : any = game.ReplicatedStorage:WaitForChild("ItemTemp")
 local PicupPromptTemp = game.ReplicatedStorage:WaitForChild("PickupPrompt")
 
+local Plr = game.Players.LocalPlayer
+local Mouse = Plr:GetMouse()
 local Camera = workspace.CurrentCamera
 
-local Plr = game.Players.LocalPlayer
+
 local PlayerGui = Plr:WaitForChild("PlayerGui")
 local Gui = PlayerGui:WaitForChild("MainGui")
 local StatsFrame = Gui:WaitForChild("PlayerStats")
 local HurtCam : any = Gui:WaitForChild("HurtCam")
 local InventoryFrame : Frame = Gui:WaitForChild("Inventory")
 local MyInventory = InventoryFrame:WaitForChild("MyItems")
+
+local TargetInfoFrame : Frame = Gui:WaitForChild("TargetInfo")
 
 local Module = {}
 
@@ -56,149 +60,33 @@ function Module.UpdateGui()
     local HurtCamVal = Module.Values.Health.val + (math.sin(os.clock() * 4) + 1) / 10
     local val = math.clamp(HurtCamVal, 0,1)
     HurtCam.ImageTransparency = val
-end
 
+    local ray = Mouse.UnitRay
 
---------------------------- // PickupItems \\ ---------------------------
+    local Params = RaycastParams.new()
+    Params.FilterDescendantsInstances = {game.Players.LocalPlayer.Character}
 
-function lerp(a, b, t)
-    return a + (b - a) * t
-  end
+    local InteractRay = workspace:Raycast(ray.Origin, ray.Direction * 10, Params)
+    if not InteractRay then return end
 
-local SelectionWheel = 0
-Module.PickupPrompts = {}
+    local Target = InteractRay.Instance
+    local ItemId = Target:GetAttribute("ItemId")
 
-local RadiusSmoothing = 0
-local WheelSmoothing = 0
+    if ItemId then
+        TargetInfoFrame.Visible = true
+        local Template = Global.Items[ItemId]
 
-local Line = Instance.new("Frame", Gui)
-
-
-function Module.UpdateItems()
-    local TotalItems = #Module.PickupPrompts
-    local ButtonRadius = 90
-    local U = TotalItems * ButtonRadius
-    local Radius = math.max((U / math.pi) / 2, 100)
-    Radius = lerp(RadiusSmoothing, Radius , 0.1)
-    RadiusSmoothing = Radius
-
-    local NewAngle = (SelectionWheel % 360 * TotalItems)
-    if NewAngle ~= NewAngle then NewAngle = 0 end
-    --WheelSmoothing = lerp(WheelSmoothing, NewAngle, 0.3)
-    WheelSmoothing = NewAngle
-
-    local Selection = {centerDis = 1000, index = 0}
-
-    for i,v in Module.PickupPrompts do
-        local Button : TextButton = v.Button
-        Button.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-
-        local Center = workspace.CurrentCamera.ViewportSize
-
-        local Angle = math.rad((360 / TotalItems) * i + WheelSmoothing)
-        local XPos, YPos = math.cos(Angle) * Radius , math.sin(Angle) * Radius 
-
-        Button.Position = UDim2.fromOffset(XPos + Center.X/2 - Button.Size.X.Offset / 2, YPos + Center.Y - Button.Size.Y.Offset / 2)
-        Button.Rotation = math.deg(Angle) + 90
-        if YPos < Selection.centerDis then
-            Selection.centerDis = YPos
-            Selection.index = i
-        end
+        local Count = Target:GetAttribute("Count") or 1
+        local text = '<font color="rgb(255,125,0)">'.. Count ..'x</font>' .. Template.Name
+        local TitleFrame : TextLabel = TargetInfoFrame:WaitForChild("Title")
+        local Description : TextLabel = TargetInfoFrame:WaitForChild("Description")
+        TitleFrame.Text = text
+        Description.Text = Template.Description
+    else
+        TargetInfoFrame.Visible = false
     end
 
-    local Button= Module.PickupPrompts[Selection.index]
-    if not Button then return end
-    local Button : TextButton = Button.Button
-    Button.BackgroundColor3 = Color3.fromRGB(250, 53, 53)
-
-    local Prompt = Module.PickupPrompts[Selection.index].prompt
-
-    if UIS:IsKeyDown(Enum.KeyCode.E) then
-        Prompt:InputHoldBegin()
-        task.wait()
-        Prompt:InputHoldEnd()
-    end
 end
-
-
-
-function OnPromptShown(prompt:ProximityPrompt)
-    local Button : TextButton = PicupPromptTemp:Clone()
-    Button.Parent = Gui
-
-    Button.MouseButton1Down:Connect(function()
-        prompt:InputHoldBegin()
-    end)
-    Button.MouseButton1Up:Connect(function()
-        prompt:InputHoldEnd()
-    end)
-
-    table.insert(Module.PickupPrompts, {prompt = prompt, Button = Button})
-    Module.UpdateItems()
-end
-
-
-function OnPromptHidden(prompt:ProximityPrompt)
-    for i,v in Module.PickupPrompts do
-       if v.prompt ~= prompt then continue end
-
-       v.Button:Destroy()
-       table.remove(Module.PickupPrompts, i)
-    end
-    Module.UpdateItems()
-end
-
-
-PromptService.PromptShown:Connect(OnPromptShown)
-PromptService.PromptHidden:Connect(OnPromptHidden)
-
-Input.AddSub(Enum.KeyCode.I, "Inventory", "InputBegan"):Connect(function()
-    InventoryFrame.Visible = not InventoryFrame.Visible
-end)
-
-UIS.InputChanged:Connect(function(input, gameProcessedEvent)
-    if input.UserInputType == Enum.UserInputType.MouseWheel then
-        SelectionWheel += input.Position.Z
-    end
-end)
-
---[[
---------------------------- // Hud \\ ---------------------------
-
-
-    
-local HudPart = Instance.new("Part", workspace.Terrain)
-local HudGui = Instance.new("SurfaceGui", PlayerGui)
-HudGui.AlwaysOnTop = true
-HudGui.Face = Enum.NormalId.Back
-HudGui.Adornee = HudPart
-
-HudPart.Anchored = true
-HudPart.CanCollide = false
-HudPart.Transparency = 1
-
-local HudCamDis = 4
-
-function Module.UpdateHudPos(DeltaTime:number)
-    local VerticalFOV = math.rad(Camera.FieldOfView)
-    local HorizontalFOV = math.rad(Camera.MaxAxisFieldOfView)
-
-    local tanVertical = math.tan(VerticalFOV / 2)
-    local tanHorizontal = math.tan(HorizontalFOV / 2)
-
-    local width = 2 * HudCamDis * tanHorizontal
-    local height = 2 * HudCamDis * tanVertical
-
-    HudPart.Size = Vector3.new(width, height, 0.01)
-    HudPart.CFrame = Camera.CFrame * CFrame.new(0, 0, -HudCamDis)
-end
-
-]]
-
-
-
-
-
 
 
 return Module

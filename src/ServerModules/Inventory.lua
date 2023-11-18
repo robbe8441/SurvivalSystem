@@ -88,4 +88,31 @@ function Inventory:MoveStack(NewInv, Index)
     self.InventoryChanged:Fire()
 end
 
+
+function Spawn(Position, ItemId, Count)
+    if Count <= 0 then return end
+
+    local new = Instance.new("Part")
+    new.Position = Position
+    new.Size = Vector3.one
+    new:SetAttribute("ItemId", ItemId)
+    new:SetAttribute("Count", Count)
+
+    new.Parent = workspace
+end
+
+
+function Inventory:SpawnItem(Position, ItemId, Count)
+    local temp = GlobalVal.Items[ItemId]
+
+    for i=1, math.floor(Count / temp.MaxStack) do
+        Spawn(Position, ItemId, temp.MaxStack)
+    end
+
+    local remaining = Count - math.floor(Count / temp.MaxStack) * temp.MaxStack
+    Spawn(Position, ItemId, remaining)
+end
+
+
+
 return Inventory

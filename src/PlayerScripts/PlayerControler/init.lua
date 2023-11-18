@@ -6,36 +6,47 @@ local CameraModule = require(script.Camera)
 local GuiHandler = require(script.GuiHandler)
 local Networking = require(script.Networking)
 local Input = require(script.input)
+local Weather = require(script.Weather)
 
 local Controller = {}
 
 Controller.Cam = CameraModule.new()
+Controller.Cam:SetFirstPerson()
 
 function Controller.Update(DeltaTime : number)
 
     Controller.Cam:Update(DeltaTime)
     GuiHandler.UpdateInv(Networking.PlayerData.Inventory.Inventory)
-    Controller.Cam.zoomLocked = #GuiHandler.PickupPrompts > 0
 
     GuiHandler.UpdateGui()
-    GuiHandler.UpdateItems()
+    Weather:Update()
 end
 
 
-
-local HoldAnim = Instance.new("Animation")
-HoldAnim.AnimationId = "rbxassetid://15381985327"
-
-
-
-Input.AddSub(Enum.KeyCode.C, "Camera", "InputBegan"):Connect(function()
-    if Controller.Cam.Arms then Controller.Cam:DeleteHands() return end
-    Controller.Cam:Spawnhands()
-    local hum = Controller.Cam.FPVCharacter:WaitForChild("Humanoid")
-    local animator : Animator = hum:WaitForChild("Animator")
-    animator:LoadAnimation(HoldAnim):Play()
+Input:AddSub(Enum.KeyCode.C, "Camera", "InputBegan"):Connect(function()
+    if Controller.Cam.isFirstPerson then Controller.Cam:SetThirdPerson() return end
+    Controller.Cam:SetFirstPerson()
 end)
 
+
+function OnCharacterAdded(Char : Model)
+    if not Char then return end
+
+    local hum : Humanoid = Char:WaitForChild("Humanoid")
+    hum.AutoRotate = false
+    hum.AutoJumpEnabled = false
+
+    Char.ChildAdded:Connect(function()
+        Controller.Cam:UpdateAnimations()
+    end)
+
+    Char.ChildRemoved:Connect(function()
+        Controller.Cam:UpdateAnimations()
+    end)
+end
+
+Player.CharacterAdded:Connect(OnCharacterAdded)
+OnCharacterAdded(Player.Character)
 
 
 return Controller

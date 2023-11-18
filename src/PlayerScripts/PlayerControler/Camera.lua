@@ -6,7 +6,8 @@ export type CameraClass = {
     Subject : BasePart,
     MaxZoom : number,
     MinZoom : number,
-    Sensitivity : number,
+    HorizontalSensitivity : number,
+    VerticalSensitivity : number,
     
     xPosition : number,
     yPosition : number,
@@ -19,16 +20,15 @@ export type CameraClass = {
     CameraShakeIntenity : number,
     
     CameraShakeDamping : number,
-    Arms : Model?,
+    isFirstPerson : boolean,
     
     zoomLocked : boolean,
     
     new : (Subject : BasePart) -> CameraClass,
     Update : (self:CameraClass, DeltaTime:number) -> (),
-    Spawnhands : (self:CameraClass) -> (),
-    DeleteHands : (self:CameraClass) ->  (),
-    UpdateTool : (self:CameraClass) -> (),
-    FPVCharacter : Model,
+    SetFirstPerson : (self:CameraClass) -> (),
+    SetThirdPerson : (self:CameraClass) ->  (),
+    UpdateAnimations : (self:CameraClass) -> (),
 }
 
 
@@ -36,10 +36,14 @@ local Camera = {} :: CameraClass
 Camera.__index = Camera
 local MouseWheelInput = 0
 local Input = require(script.Parent.input)
+local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local Plr = game.Players.LocalPlayer
 
 local cam = workspace.CurrentCamera
+
+local IdleAnimation = Instance.new("Animation")
+IdleAnimation.AnimationId = "rbxassetid://15387322700"
 
 --------------------------------- // Functions \\ ---------------------------------
 
@@ -47,22 +51,6 @@ function lerp(a, b, t)
     return a + (b - a) * t
 end
 
-
-local FPVCharacter : Model = game.ReplicatedStorage:WaitForChild("Dummy"):Clone()
-FPVCharacter.Parent = workspace.Terrain
-local hum : Humanoid = FPVCharacter:WaitForChild("Humanoid")
-
-local Description = game.Players:GetHumanoidDescriptionFromUserId(Plr.UserId)
-hum:ApplyDescription(Description)
-
-for i,v in FPVCharacter:GetDescendants() do
-    if not v:IsA("BasePart") then continue end
-    v.CanCollide = false
-    v.CanTouch = false
-    v.CanQuery = false
-    if v.Name == "Right Arm" or v.Name == "Left Arm" then continue end
-    v.Transparency = 1
-end
 --------------------------------- // Main Camera \\ ---------------------------------
 
 function Camera.new(Subject) : CameraClass
@@ -73,7 +61,8 @@ function Camera.new(Subject) : CameraClass
         Subject = Subject,
         MaxZoom = 20,
         MinZoom = 2,
-        Sensitivity = 0.5,
+        HorizontalSensitivity = 0.5,
+        VerticalSensitivity = 0.4,
 
         xPosition  = 0,
         yPosition = 0,
@@ -87,7 +76,8 @@ function Camera.new(Subject) : CameraClass
 
         CameraOffset = Vector3.new(2,0,0),
 
-        zoomLocked = false
+        zoomLocked = false,
+        isFirstPerson = false
     }
 
     return setmetatable(res, Camera)
@@ -109,25 +99,23 @@ function GetNoise(x)
     return value
 end
 
+local track
 
 
 function Camera:Update(DeltaTime)
-    if not self.Subject then
-        local plr = game.Players.LocalPlayer
-        local char = plr.Character or plr.CharacterAdded:Wait()
-        self.Subject = char.PrimaryPart
-    end
+    local plr = game.Players.LocalPlayer
+    local Char = plr.Character or plr.CharacterAdded:Wait()
+    self.Subject = Char.PrimaryPart
     
-    if Input.IsKeyDown(Enum.KeyCode.LeftControl, "Camera") then
+    if Input:IsKeyDown(Enum.KeyCode.LeftControl, "Camera") then
         UIS.MouseBehavior = Enum.MouseBehavior.Default
     else
         UIS.MouseBehavior = Enum.MouseBehavior.LockCenter
     end
 
+    local Input = Input:GetMouseDelta() * Vector2.new(math.rad(self.HorizontalSensitivity), math.rad(self.VerticalSensitivity))
 
-    local Input = Input:GetMouseDelta() * math.rad(self.Sensitivity)
-
-    self.xPosition = self.xPosition + Input.X
+    self.xPosition += Input.X
     self.yPosition = math.clamp(self.yPosition - Input.Y, math.rad(10), math.rad(170))
 
     local x = math.sin(self.yPosition) * math.cos(self.xPosition)
@@ -151,7 +139,7 @@ function Camera:Update(DeltaTime)
 
     local CamOffset = self.CameraOffset
 
-    if self.Arms then 
+    if self.isFirstPerson then 
         self.CameraShakeIntenity = 0.1
         CamOffset = Vector3.new(0, 0.5, 0);
         self.Zoom = .1;
@@ -161,34 +149,64 @@ function Camera:Update(DeltaTime)
     local cf = CFrame.new(Pos, self.Subject.Position) * CFrame.new(CamOffset  + ShakeOffset)
     cam.CFrame = cf
 
-    if not self.Arms then return end
-    
-    local ArmsCF = CFrame.fromMatrix(self.Subject.Position, cf.RightVector, cf.UpVector:Lerp(Vector3.new(0,1,0), 0.3)) * CFrame.new(0,-2,0)
-    
-    self.Arms.PrimaryPart.CFrame = ArmsCF
+    local CharCf = Char:GetPivot()
+    CharCf = CFrame.fromMatrix(CharCf.Position, cf.RightVector, CharCf.UpVector)
+    Char:PivotTo(CharCf)
+
+    if not track then return end
+    track:AdjustSpeed(0)
+    track.TimePosition = (y + 1) / 2
 end
 
 
 function ChangeCharacterTranspareny(num)
    local Char = Plr.Character or Plr.CharacterAppearanceLoaded:Wait()
    for i,v in Char:GetDescendants() do
+    if v.Parent:IsA("Tool") then continue end
         if not v:IsA("BasePart") or v.Name == "HumanoidRootPart" then continue end
-        v.Transparency = num
+        if v.Name == "Right Arm" or v.Name == "Left Arm" then continue end
+
+        v.LocalTransparencyModifier = num
    end
 end
 
 
-function Camera:Spawnhands()
-    self.Arms = FPVCharacter
+function Camera:SetFirstPerson()
+    if track then track:Stop() end
+
+    local Char = Plr.Character or Plr.CharacterAdded:Wait()
+    local hum = Char:WaitForChild("Humanoid")
+    local animator : Animator = hum:WaitForChild("Animator")
+    local Tool = Char:FindFirstChildWhichIsA("Tool")
+
+    if Tool and Tool:FindFirstChild("HoldAnimation") then 
+        track = animator:LoadAnimation(Tool:FindFirstChild("HoldAnimation"))
+    else
+        track = animator:LoadAnimation(IdleAnimation)
+    end
+
+    track.Priority = Enum.AnimationPriority.Action2
+    track:Play()
+
     ChangeCharacterTranspareny(1)
+    self.isFirstPerson = true
 end
 
-function Camera:DeleteHands()
-    FPVCharacter:PivotTo(CFrame.new(0,1000,0))
-    self.Arms = nil
+function Camera:SetThirdPerson()
+    if track then track:Stop() end
+    self.isFirstPerson = false
     ChangeCharacterTranspareny(0)
 end
 
+
+function Camera:UpdateAnimations()
+    if self.isFirstPerson then 
+        self:SetFirstPerson() 
+    else
+        self:SetThirdPerson()
+    end
+    track:AdjustSpeed(0)
+end
 
 
 UIS.InputChanged:Connect(function(input)
@@ -197,7 +215,5 @@ UIS.InputChanged:Connect(function(input)
     end
 end)
 
-
-Camera.FPVCharacter = FPVCharacter
 
 return Camera

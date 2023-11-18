@@ -2,6 +2,7 @@ local Modules = game.ServerStorage.Modules
 
 local PlayerModule = require(Modules.PlayerModule)
 local Global = require(game.ReplicatedStorage.Modules.GlobalValues)
+local Inventory = require(Modules.Inventory)
 
 
 function OnPlayerAdded(Plr : Player)
@@ -13,6 +14,10 @@ function OnPlayerAdded(Plr : Player)
     Player.Inventory:AddToInventory(2, 10)
 end
 
+
+for i=1, 10 do
+    Inventory:SpawnItem(Vector3.new(0,60,0), math.random(1,2), math.random(1, 40))
+end
 
 local XPPart = Instance.new("Part", workspace)
 XPPart.Position = Vector3.new(0,0,10)

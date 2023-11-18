@@ -8,9 +8,3 @@ Health / Food / Water / etc
 Inventory
 Custom Camera
 ItemSystem (WIP)
-
-
-TODO 
-
-Player Controller
- - Rework Client Script

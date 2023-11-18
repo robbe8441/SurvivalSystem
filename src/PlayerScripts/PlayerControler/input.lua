@@ -15,11 +15,11 @@ local Module = {}
 Module.Subscriptions = {}
 
 
-function Module.GetMouseDelta()
+function Module:GetMouseDelta()
     return UIS:GetMouseDelta()
 end
 
-function Module.IsKeyDown(key : Enum.KeyCode, prio:PrioType?) : boolean
+function Module:IsKeyDown(key : Enum.KeyCode, prio:PrioType?) : boolean
     if not prio then return UIS:IsKeyDown(key) end
 
     local thisPrio = table.find(PrioList, prio)
@@ -35,7 +35,7 @@ function Module.IsKeyDown(key : Enum.KeyCode, prio:PrioType?) : boolean
     return UIS:IsKeyDown(key)
 end
 
-function Module.AddSub(key : Enum.KeyCode, prio:PrioType, EventType : EventType)
+function Module:AddSub(key : Enum.KeyCode, prio:PrioType, EventType : EventType)
     local prio = table.find(PrioList, prio)
     local sub = Module.Subscriptions[key] or {}
     if sub[prio] then return sub[prio]  end

@@ -22,6 +22,7 @@ export type InventoryClass = {
     RemoveFromInventory : (self:InventoryClass, itemId:number, count:number?) -> boolean,
     CalculateWeight : (self:InventoryClass) -> number,
     MoveStack : (self:InventoryClass, NewInv:InventoryClass, index:number) -> (),
+    SpawnItem : (self:InventoryClass, Position:Vector3, ItemId:number, Count:number) -> (),
     InventoryChanged : EventClass
 }
 
@@ -97,6 +98,7 @@ module.Items = {
         assetId = "7978712756",
         expiration = 500,
         MaxStack = 10,
+        Description = "dont you knwo what this is?"
     };
 
     [2] = {
@@ -105,6 +107,7 @@ module.Items = {
         assetId = "14209254217",
         expiration = 500,
         MaxStack = 30,
+        Description = "BANNANA"
     };
 }
 
