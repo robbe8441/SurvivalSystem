@@ -17,8 +17,7 @@ local StatsFrame = Gui:WaitForChild("PlayerStats")
 local HurtCam : any = Gui:WaitForChild("HurtCam")
 local InventoryFrame : Frame = Gui:WaitForChild("Inventory")
 local MyInventory = InventoryFrame:WaitForChild("MyItems")
-
-local TargetInfoFrame : Frame = Gui:WaitForChild("TargetInfo")
+local TargetInfoFrame : Frame = Gui:WaitForChild("TargetInfoFrame")
 
 local Module = {}
 
@@ -78,8 +77,14 @@ function Module.UpdateGui()
 
         local Count = Target:GetAttribute("Count") or 1
         local text = '<font color="rgb(255,125,0)">'.. Count ..'x</font>' .. Template.Name
-        local TitleFrame : TextLabel = TargetInfoFrame:WaitForChild("Title")
-        local Description : TextLabel = TargetInfoFrame:WaitForChild("Description")
+
+        local Category : ImageLabel = TargetInfoFrame:WaitForChild("Category")
+        Category.ImageRectOffset = Vector2.new(0,(Template.Category - 1) * 101)
+
+
+        local TextFrame = TargetInfoFrame:WaitForChild("TargetInfo")
+        local TitleFrame : TextLabel = TextFrame:WaitForChild("Title")
+        local Description : TextLabel = TextFrame:WaitForChild("Description")
         TitleFrame.Text = text
         Description.Text = Template.Description
     else

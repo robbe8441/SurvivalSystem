@@ -7,19 +7,21 @@ local GuiHandler = require(script.GuiHandler)
 local Networking = require(script.Networking)
 local Input = require(script.input)
 local Weather = require(script.Weather)
+local Animator = require(script.Animator)
 
 local Controller = {}
+Controller.Animator = Animator
 
-Controller.Cam = CameraModule.new()
-Controller.Cam:SetFirstPerson()
+--Controller.Cam = CameraModule.new()
+--Controller.Cam:SetFirstPerson()
 
 function Controller.Update(DeltaTime : number)
 
-    Controller.Cam:Update(DeltaTime)
+    --Controller.Cam:Update(DeltaTime)
     GuiHandler.UpdateInv(Networking.PlayerData.Inventory.Inventory)
 
     GuiHandler.UpdateGui()
-    Weather:Update()
+    --Weather:Update()
 end
 
 

@@ -1,0 +1,28 @@
+{
+	"name": "Ultra ool Test Game",
+	"tree": {
+	  "$className": "DataModel",
+  
+	  "ReplicatedStorage": {
+		"Modules": {
+		  "$path": "src/GlobalModules"
+		}
+	  },
+  
+	  "ServerScriptService": {
+		"$path": "src/Server"
+	  },
+  
+	  "ServerStorage": {
+		"Modules": {
+		  "$path": "src/ServerModules"
+		}
+	  },
+  
+	  "StarterPlayer": {
+		"StarterPlayerScripts": {
+		  "$path": "src/PlayerScripts"
+		}
+	  }
+	}
+  }
