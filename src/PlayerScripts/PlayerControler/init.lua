@@ -12,16 +12,16 @@ local Animator = require(script.Animator)
 local Controller = {}
 Controller.Animator = Animator
 
---Controller.Cam = CameraModule.new()
---Controller.Cam:SetFirstPerson()
+Controller.Cam = CameraModule.new()
+Controller.Cam:SetFirstPerson()
 
 function Controller.Update(DeltaTime : number)
 
-    --Controller.Cam:Update(DeltaTime)
+    Controller.Cam:Update(DeltaTime)
     GuiHandler.UpdateInv(Networking.PlayerData.Inventory.Inventory)
 
     GuiHandler.UpdateGui()
-    --Weather:Update()
+    Weather:Update()
 end
 
 
@@ -33,10 +33,6 @@ end)
 
 function OnCharacterAdded(Char : Model)
     if not Char then return end
-
-    local hum : Humanoid = Char:WaitForChild("Humanoid")
-    hum.AutoRotate = false
-    hum.AutoJumpEnabled = false
 
     Char.ChildAdded:Connect(function()
         Controller.Cam:UpdateAnimations()
