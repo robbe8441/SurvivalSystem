@@ -43,12 +43,12 @@ function Tentacle:Update()
 
     for i=#self.Bones, 1, -1 do
         local v = self.Bones[i]
-        v:UpdateP1()
+        v:UpdateP0()
     end
 
     for i=1, #self.Bones do
         local v = self.Bones[i]
-        v:UpdateP0()
+        v:UpdateP1()
     end
 end
 

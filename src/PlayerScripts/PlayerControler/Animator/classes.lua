@@ -16,15 +16,12 @@ export type BoneClass = {
     Connection1 : JointClass,
     length : number,
     CF : CFrame,
-    MinRotation : Vector3,
-    MaxRotation : Vector3,
 
     new : (Joint0 :JointClass , Joint1 :JointClass) -> BoneClass,
     UpdateP0 : (self:BoneClass) -> (),
     UpdateP1 : (self:BoneClass) -> (),
     GetCenterCFrame : (self:BoneClass) -> CFrame,
     GetRootCFrame : (self:BoneClass) -> CFrame,
-    ApplyMaxAngle : (self:BoneClass, CFrame, CFrame) -> CFrame
 }
 
 

@@ -10,7 +10,7 @@ local Debugger = require(Animator.Debug)
 local Tentacle = TentacleModule.new()
 local Joints = {}
 
-for i=1, 3 do
+for i=1, 10 do
     local p = Instance.new("Part",workspace.IKTest)
     p.Size = Vector3.one * 0.5
     p.CFrame *= CFrame.new(0,65, i * 10)
