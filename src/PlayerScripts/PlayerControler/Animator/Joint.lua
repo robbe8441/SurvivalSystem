@@ -1,18 +1,9 @@
-export type JointClass = {
-    __index : any,
-    Part : BasePart,
-    CanMove : boolean,
-    Position : CFrame,
-    Parent : JointClass,
+local Classes = require(script.Parent.classes)
 
-    new : (Part : BasePart) -> JointClass,
-    GetCFrame : (self:JointClass) -> CFrame,
-    SetCFrame : (self:JointClass, CFrame) -> (),
-}
-
-local Joint = {} :: JointClass
+local Joint = {} :: Classes.JointClass
 Joint.__index = Joint
 
+local Debugger = require(script.Parent.Debug)
 
 function Joint.new(Part)
     local jont = {
@@ -23,7 +14,11 @@ function Joint.new(Part)
         Parent = nil,
     }
 
-    return setmetatable(jont, Joint)
+    
+    local res = setmetatable(jont, Joint)
+    Debugger:AddJoint(res)
+    
+    return res
 end
 
 

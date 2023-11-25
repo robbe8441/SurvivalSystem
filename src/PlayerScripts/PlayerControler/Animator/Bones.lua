@@ -1,64 +1,78 @@
-local Joints = require(script.Parent.Joint)
+local classes = require(script.Parent.classes)
 
-export type BoneClass = {
-    __index : any,
-    Connection0 : Joints.JointClass,
-    Connection1 : Joints.JointClass,
-    lengh : number,
-    CF : CFrame,
-    MinRotation : Vector3,
-    MaxRotation : Vector3,
-
-    new : (Joint0 :Joints.JointClass , Joint1 :Joints.JointClass) -> BoneClass,
-    UpdateP0 : (self:BoneClass) -> (),
-    UpdateP1 : (self:BoneClass) -> (),
-}
-
-
-local Bone = {} :: BoneClass
+local Bone = {} :: classes.BoneClass
 Bone.__index = Bone
+
+local Debugger = require(script.Parent.Debug)
 
 function Bone.new(Joint0 , Joint1)
     local p1 = Joint0:GetCFrame().Position
     local p2 = Joint1:GetCFrame().Position
     local Vector = (p1 - p2)
 
-    local lengh = Vector.Magnitude
+    local length = Vector.Magnitude
     local CF = CFrame.lookAt(p1,p2)
 
     local b = {
         Connection0 = Joint0,
         Connection1 = Joint1,
-        lengh = lengh,
+        length = length,
         CF = CF,
-        MinRotation = Vector3.new(-30,-30,-30),
-        MaxRotation = Vector3.new(30,30,30),
+        MinRotation = Vector3.new(-180,10,-20),
+        MaxRotation = Vector3.new(180,130,20),
     }
 
-    return setmetatable(b, Bone)
+    local res = setmetatable(b, Bone)
+    Debugger:AddBone(res)
+    return res
 end
 
 function Bone:UpdateP0()
     local p0 = self.Connection0:GetCFrame()
     local p1 = self.Connection1:GetCFrame()
-    local Point1 = CFrame.lookAt(p0.Position, p1.Position)
-    local diff = p0:ToObjectSpace(Point1)
-    local rx,ry,rz = diff:ToEulerAnglesXYZ()
-    local Rotation = CFrame.Angles(
-        math.clamp(rx, math.rad(self.MinRotation.X), math.rad(self.MaxRotation.X)),
-        math.clamp(ry, math.rad(self.MinRotation.Y), math.rad(self.MaxRotation.Y)),
-        math.clamp(rz, math.rad(self.MinRotation.Z), math.rad(self.MaxRotation.Z)))
-
-    self.Connection1:SetCFrame((p0 * Rotation) * CFrame.new(0,0,-self.lengh))
+    local Rotation = CFrame.lookAt(p1.Position,p0.Position).Rotation
+    --Rotation = self:ApplyMaxAngle(p0, Rotation)
+    
+    local Point0 = (CFrame.new(p1.Position) * Rotation) * CFrame.new(0,0,-self.length)
+    
+    self.Connection0:SetCFrame(Point0)
 end
 
 function Bone:UpdateP1()
-    local p0 = self.Connection0:GetCFrame().Position
-    local p1 = self.Connection1:GetCFrame().Position
-    local Rotation = CFrame.lookAt(p0,p1).Rotation
-    local Point0 = (CFrame.new(p1) * Rotation) * CFrame.new(0,0,self.lengh)
-
-    self.Connection0:SetCFrame(Point0)
+    local p0 = self.Connection0:GetCFrame()
+    local p1 = self.Connection1:GetCFrame()
+    local Rotation = CFrame.lookAt(p0.Position,p1.Position).Rotation
+    --Rotation = self:ApplyMaxAngle(p0, Rotation)
+    
+    local Point1 = (CFrame.new(p0.Position) * Rotation) * CFrame.new(0,0,-self.length)
+    
+    self.Connection1:SetCFrame(Point1)
 end
+
+function Bone:GetCenterCFrame()
+    local p0 = self.Connection0:GetCFrame()
+    local p1 = self.Connection1:GetCFrame()
+    return CFrame.lookAt(p0.Position:Lerp(p1.Position, 0.5), p1.Position)
+end
+
+
+function Bone:ApplyMaxAngle(p0, p1)
+    local relativeCFrame = p1:ToObjectSpace(p0)
+
+    local maxWinkel = 45
+
+    local rx, ry, rz = relativeCFrame:ToEulerAnglesXYZ()
+
+    local clampedCFrame = CFrame.fromEulerAnglesXYZ(
+        math.clamp(rx, math.rad(-maxWinkel), math.rad(maxWinkel)),
+        math.clamp(ry, math.rad(-maxWinkel), math.rad(maxWinkel)),
+        math.clamp(rz, math.rad(-maxWinkel), math.rad(maxWinkel))
+    )
+
+    local resultCFrame = p0 * clampedCFrame * CFrame.new(0, 0, -self.length)
+    return resultCFrame
+end
+
+
 
 return Bone
