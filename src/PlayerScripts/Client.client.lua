@@ -10,15 +10,13 @@ local Debugger = require(Animator.Debug)
 local Tentacle = TentacleModule.new()
 local Joints = {}
 
-for i=1, 10 do
-    local p = Instance.new("Part",workspace.IKTest)
-    p.Size = Vector3.one * 0.5
-    p.CFrame *= CFrame.new(0,65, i * 10)
-    p.Anchored = true
-    local Joint = JointsModule.new(p)
+workspace:WaitForChild("IKChar")
+local TestBone = {workspace.IKChar.Part1, workspace.IKChar.Part2, workspace.IKChar.Part3}
+
+for i,v in TestBone do
+    local Joint = JointsModule.new(v)
+    if i==1 then Joint.CanMove = false end
     table.insert(Joints, Joint)
-    if i==1 then Joint.CanMove = false continue end
-    Joint.Parent = Joints[1]
 end
 
 for i=2, #Joints do
@@ -26,6 +24,14 @@ for i=2, #Joints do
     Tentacle:AddBone(Bone)
 end
 
+local Upper = Tentacle.Bones[1]
+local Down = Tentacle.Bones[2]
+
+Upper.MinAngles = Vector3.new(0,-30,0)
+Upper.MaxAngles = Vector3.new(0,120,0)
+
+Down.MinAngles = Vector3.new(0,-150,0)
+Down.MaxAngles = Vector3.new(0,-5,0)
 
 
 local plr = game.Players.LocalPlayer
