@@ -4,6 +4,7 @@ export type JointClass = {
     CanMove : boolean,
     Position : CFrame,
     Parent : JointClass,
+    Offset : CFrame,
 
     new : (Part : BasePart) -> JointClass,
     GetCFrame : (self:JointClass) -> CFrame,
@@ -16,6 +17,9 @@ export type BoneClass = {
     Connection1 : JointClass,
     length : number,
     CF : CFrame,
+
+    MinAngles : Vector3,
+    MaxAngles : Vector3,
 
     new : (Joint0 :JointClass , Joint1 :JointClass) -> BoneClass,
     UpdateP0 : (self:BoneClass) -> (),
