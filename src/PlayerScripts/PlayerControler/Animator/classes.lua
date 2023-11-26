@@ -6,6 +6,9 @@ export type JointClass = {
     Parent : JointClass,
     Offset : CFrame,
 
+    Children : {BoneClass},
+    Parents : {BoneClass},
+
     new : (Part : BasePart) -> JointClass,
     GetCFrame : (self:JointClass) -> CFrame,
     SetCFrame : (self:JointClass, CFrame) -> (),
@@ -42,6 +45,17 @@ export type TentacleCalass = {
     AddBone : (self:TentacleCalass, BoneClass) -> (),
     IsBeingRendered : (self:TentacleCalass) -> boolean
 }
+
+
+export type AnimatorClass = {
+    __index : any,
+
+    new : () -> AnimatorClass,
+    SetupRigToIK : (self:AnimatorClass, Model) -> (),
+    Update : (self:AnimatorClass) -> (),
+}
+
+
 
 
 return 0

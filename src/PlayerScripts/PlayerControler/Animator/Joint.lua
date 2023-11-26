@@ -11,7 +11,9 @@ function Joint.new(Part)
         CanMove = true,
         Position = Part.CFrame,
         Parent = nil,
-        Offset = CFrame.new()
+        Offset = CFrame.new(),
+        Children = {},
+        Parents = {},
     }
 
     local res = setmetatable(jont, Joint)
@@ -22,7 +24,7 @@ end
 
 
 function Joint:GetCFrame()
-    return self.Position
+    return self.Position * self.Offset
 end
 
 
