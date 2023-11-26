@@ -1,6 +1,6 @@
 local Classes = require(script.Parent.classes)
 
-local Tentacle = {} :: Classes.TentacleCalass
+local Tentacle = {} :: Classes.TentacleClass
 Tentacle.__index = Tentacle
 
 function Tentacle.new()

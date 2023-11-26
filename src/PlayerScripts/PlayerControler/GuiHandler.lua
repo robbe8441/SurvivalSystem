@@ -4,7 +4,7 @@ local PromptService = game:GetService("ProximityPromptService")
 local Global = require(game.ReplicatedStorage.Modules.GlobalValues)
 local Input = require(script.Parent.input)
 local ItemTemp : any = game.ReplicatedStorage:WaitForChild("ItemTemp")
-local PicupPromptTemp = game.ReplicatedStorage:WaitForChild("PickupPrompt")
+local PickupPromptTemp = game.ReplicatedStorage:WaitForChild("PickupPrompt")
 
 local Plr = game.Players.LocalPlayer
 local Mouse = Plr:GetMouse()
@@ -22,7 +22,7 @@ local TargetInfoFrame : Frame = Gui:WaitForChild("TargetInfoFrame")
 local Module = {}
 
 Module.Values = {
-    Health =    {val = 1, name = "6Helath"},
+    Health =    {val = 1, name = "6Health"},
     Water =     {val = 1, name = "5Water"},
     Food =      {val = 1, name = "4Food"},
 	Stamina =   {val = 1, name = "3Stamina"},

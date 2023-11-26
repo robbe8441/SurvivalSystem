@@ -1,3 +1,11 @@
 {
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "cSpell.enableFiletypes": [
+        "lua"
+    ],
+    "cSpell.language": "en,en-GB",
+    "cSpell.words": [
+        "Raycast",
+        "rbxassetid"
+    ]
 }

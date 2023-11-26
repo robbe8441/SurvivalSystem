@@ -1,12 +1,12 @@
 local Classes = require(script.Parent.classes)
+local Debugger = require(script.Parent.Debug)
 
 local Joint = {} :: Classes.JointClass
 Joint.__index = Joint
 
-local Debugger = require(script.Parent.Debug)
 
 function Joint.new(Part)
-    local jont = {
+    local joint = {
         Part = Part,
         CanMove = true,
         Position = Part.CFrame,
@@ -16,7 +16,7 @@ function Joint.new(Part)
         Parents = {},
     }
 
-    local res = setmetatable(jont, Joint)
+    local res = setmetatable(joint, Joint)
     Debugger:AddJoint(res)
 
     return res
@@ -24,13 +24,13 @@ end
 
 
 function Joint:GetCFrame()
-    return self.Position * self.Offset
+    return self.Position
 end
 
 
 function Joint:SetCFrame(Cf)
     if not self.CanMove then return end
-    self.Position = Cf * self.Offset:Inverse()
+    self.Position = Cf 
     self.Part.CFrame = self.Position
 end
 

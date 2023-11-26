@@ -89,7 +89,7 @@ function Inventory:MoveStack(NewInv, Index)
 end
 
 
-function Spawn(Position, ItemId, Count)
+function SpawnItem(Position, ItemId, Count)
     if Count <= 0 then return end
 
     local new = Instance.new("Part")
@@ -106,11 +106,11 @@ function Inventory:SpawnItem(Position, ItemId, Count)
     local temp = GlobalVal.Items[ItemId]
 
     for i=1, math.floor(Count / temp.MaxStack) do
-        Spawn(Position, ItemId, temp.MaxStack)
+        SpawnItem(Position, ItemId, temp.MaxStack)
     end
 
     local remaining = Count - math.floor(Count / temp.MaxStack) * temp.MaxStack
-    Spawn(Position, ItemId, remaining)
+    SpawnItem(Position, ItemId, remaining)
 end
 
 

@@ -19,7 +19,7 @@ export type BoneClass = {
     Connection0 : JointClass,
     Connection1 : JointClass,
     length : number,
-    CF : CFrame,
+    DefaultRotation : CFrame,
 
     MinAngles : Vector3,
     MaxAngles : Vector3,
@@ -32,7 +32,7 @@ export type BoneClass = {
 }
 
 
-export type TentacleCalass = {
+export type TentacleClass = {
     __index : any,
     RootJoint : JointClass,
     LastJoint : JointClass,
@@ -40,19 +40,26 @@ export type TentacleCalass = {
     Bones : {BoneClass},
     TargetPosition : Vector3,
 
-    new : (Model:Model) -> TentacleCalass,
-    Update : (self:TentacleCalass) -> (),
-    AddBone : (self:TentacleCalass, BoneClass) -> (),
-    IsBeingRendered : (self:TentacleCalass) -> boolean
+    new : (Model:Model) -> TentacleClass,
+    Update : (self:TentacleClass) -> (),
+    AddBone : (self:TentacleClass, BoneClass) -> (),
+    IsBeingRendered : (self:TentacleClass) -> boolean
 }
 
 
 export type AnimatorClass = {
     __index : any,
+    Tentacles : {TentacleClass?},
+
+    LeftArm : TentacleClass?,
+    RightArm : TentacleClass?,
+    LeftLeg : TentacleClass?,
+    RightLeg : TentacleClass?,
 
     new : () -> AnimatorClass,
     SetupRigToIK : (self:AnimatorClass, Model) -> (),
     Update : (self:AnimatorClass) -> (),
+    GetTentacleByPartName : (self:AnimatorClass, string) -> TentacleClass?
 }
 
 

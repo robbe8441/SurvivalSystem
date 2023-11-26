@@ -16,11 +16,11 @@ end
 
 
 function Bone.new(Joint0:classes.JointClass, Joint1:classes.JointClass)
-    local p0 = Joint0:GetCFrame().Position
+    local p0 = Joint0:GetCFrame()
     local p1 = Joint1:GetCFrame().Position
 
-    local length = (p0 - p1).Magnitude
-    local CF = CFrame.lookAt(p0,p1)
+    local length = (p0.Position - p1).Magnitude
+    local DefaultRotation = p0:ToObjectSpace(CFrame.lookAt(p0.Position,p1)).Rotation
 
     local b = {
         Connection0 = Joint0,
@@ -30,7 +30,7 @@ function Bone.new(Joint0:classes.JointClass, Joint1:classes.JointClass)
         MinAngles = Vector3.new(0,-45,0),
         MaxAngles = Vector3.new(0,45,0),
 
-        CF = CF,
+        DefaultRotation = CFrame.new(),
     }
 
     local res = setmetatable(b, Bone)
@@ -45,10 +45,10 @@ end
 function Bone:UpdateP0()
     local p0 = self.Connection0:GetCFrame()
     local p1 = self.Connection1:GetCFrame()
-    local Rotation = CFrame.lookAt(p1.Position,p0.Position, p1.UpVector).Rotation
-    
+    local Rotation = CFrame.lookAt(p1.Position,p0.Position).Rotation
+
     local Point0 = (CFrame.new(p1.Position) * Rotation) * CFrame.new(0,0,-self.length)
-    
+
     self.Connection0:SetCFrame(Point0)
 end
 
@@ -56,7 +56,7 @@ end
 function Bone:UpdateP1()
     local p0 = self.Connection0:GetCFrame()
     local p1 = self.Connection1:GetCFrame()
-    local Rotation = CFrame.lookAt(p0.Position, p1.Position, p0.UpVector)
+    local Rotation = p0 * CFrame.lookAt(p0.Position, p1.Position)
     Rotation = ApplyMaxAngle(p0.Rotation, Rotation.Rotation, self.MinAngles, self.MaxAngles)
 
     local Point1 = (CFrame.new(p0.Position) * Rotation) * CFrame.new(0,0,-self.length)
