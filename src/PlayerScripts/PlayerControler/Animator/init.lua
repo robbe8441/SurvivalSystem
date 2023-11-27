@@ -4,7 +4,20 @@ local Debug = require(script.Debug)
 local TentacleModule = require(script.Tentacle)
 local classes = require(script.classes)
 
+local v3 = Vector3.new
+
+
 local IKIgnoredParts = {"HumanoidRooPart", "UpperTorso", "LowerTorso"}
+local DefaultCharSettings = {
+    Shoulder={v3(-10,-90,0), v3(50,-70,0)},
+    Elbow  = {v3(-80,0,0), v3(0,100,0)},
+    Wrist  = {v3(-10,-10,-10), v3(10,10,10)},
+
+    Hip    = {v3(-30,-20,0), v3(0,150,0)},
+    Knee   = {v3(-150,0,0), v3(0,0,0)},
+    Ankle  = {v3(-20,-20,-20), v3(20,20,20)},
+}
+
 
 local Animator = {} :: classes.AnimatorClass
 Animator.__index = Animator
@@ -42,6 +55,7 @@ end
 
 
 
+
 function Animator:SetupRigToIK(Character)
     local Hum : Humanoid = Character:WaitForChild("Humanoid")
     Hum.BreakJointsOnDeath = false
@@ -62,16 +76,31 @@ function Animator:SetupRigToIK(Character)
         local Joint1 = Joints[Part1] or JointModule.new(Part1)
         Joints[Part1] = Joint1
 
+        --Joint0.Offset = v.C0
+
         if table.find(IKIgnoredParts, Part0.Name) then Joint0.CanMove = false end
+        --if Part0.Name == "RightUpperArm" then Joint0.OnlyRotate = true end
+
+        if Part1.Name == "Head" then Joint1.CanMove = false end
 
         local Bone = BoneModule.new(Joint0, Joint1)
-        Bone.MinAngles = Vector3.one * -1200
-        Bone.MaxAngles = Vector3.one * 1200
+        Bone.MinAngles = Vector3.one * -1000
+        Bone.MaxAngles = Vector3.one * 1000
         table.insert(Bones, Bone)
+
+        local Angles = DefaultCharSettings[v.Name] or DefaultCharSettings[v.Name:sub(5,#v.Name)] or DefaultCharSettings[v.Name:sub(6,#v.Name)]
+        local Switched = string.match(v.Name, "Left")
+
+        if Angles and not Switched then
+            Bone.MinAngles = Angles[1]
+            Bone.MaxAngles = Angles[2]
+        end
 
         table.insert(JointPairs, {Joint0, Joint1})
         v:Destroy()
     end
+
+
 
     local LowerTorso = Character:WaitForChild("LowerTorso")
     local Joint = Joints[LowerTorso]
@@ -80,7 +109,6 @@ function Animator:SetupRigToIK(Character)
 
     for _,tent in tab do
         local Tentacle = TentacleModule.new()
-
         for _,v in tent do
             Tentacle:AddBone(v)
         end
@@ -100,10 +128,12 @@ function Animator:Update()
 
     for _,v in ipairs(self.Tentacles) do
         v:Update()
-        v.TargetPosition = workspace.TargetPart.CFrame.Position
     end
 
-    if self.LeftArm then self.LeftArm.TargetPosition = workspace.ArmTarget.Position end
+    if self.LeftArm then self.LeftArm.TargetPosition = workspace.LeftArm.Position end
+    if self.RightArm then self.RightArm.TargetPosition = workspace.RightArm.Position end
+    if self.RightLeg then self.RightLeg.TargetPosition = workspace.RightFoot.Position end
+    if self.LeftLeg then self.LeftLeg.TargetPosition = workspace.LeftFoot.Position end
 end
 
 

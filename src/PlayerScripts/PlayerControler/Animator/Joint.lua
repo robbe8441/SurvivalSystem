@@ -9,6 +9,7 @@ function Joint.new(Part)
     local joint = {
         Part = Part,
         CanMove = true,
+        OnlyRotate = false,
         Position = Part.CFrame,
         Parent = nil,
         Offset = CFrame.new(),
@@ -30,8 +31,9 @@ end
 
 function Joint:SetCFrame(Cf)
     if not self.CanMove then return end
-    self.Position = Cf 
-    self.Part.CFrame = self.Position
+    if self.OnlyRotate then Cf = CFrame.new(self.Position.Position) * Cf.Rotation end
+    self.Position = Cf
+    self.Part.CFrame = self.Position * self.Offset * CFrame.Angles(math.rad(90),0,0)
 end
 
 return Joint

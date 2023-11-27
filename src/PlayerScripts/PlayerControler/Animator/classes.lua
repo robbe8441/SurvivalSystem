@@ -2,6 +2,7 @@ export type JointClass = {
     __index : any,
     Part : BasePart,
     CanMove : boolean,
+    OnlyRotate : boolean,
     Position : CFrame,
     Parent : JointClass,
     Offset : CFrame,
@@ -19,7 +20,6 @@ export type BoneClass = {
     Connection0 : JointClass,
     Connection1 : JointClass,
     length : number,
-    DefaultRotation : CFrame,
 
     MinAngles : Vector3,
     MaxAngles : Vector3,
@@ -59,7 +59,7 @@ export type AnimatorClass = {
     new : () -> AnimatorClass,
     SetupRigToIK : (self:AnimatorClass, Model) -> (),
     Update : (self:AnimatorClass) -> (),
-    GetTentacleByPartName : (self:AnimatorClass, string) -> TentacleClass?
+    GetTentacleByPartName : (self:AnimatorClass, Name:string) -> TentacleClass?
 }
 
 

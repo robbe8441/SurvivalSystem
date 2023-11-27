@@ -11,7 +11,8 @@ function Debugger:AddJoint(Joint : classes.JointClass)
     if not self.Enabled then return end
     local p = Instance.new("Part", workspace.Terrain)
     p.Anchored = true
-    p.Size = Vector3.new(0.2, 0.2, 0.5)
+    p.Size = Vector3.one * 0.15
+    p.Shape = Enum.PartType.Ball
     p.CanCollide = false
     p.Color = Color3.fromRGB(255, 0, 0)
 
@@ -32,11 +33,12 @@ end
 function Debugger:Update()
     if not self.Enabled then return end
     for i,v in ipairs(self.Joints) do
-        v.Part.CFrame = v.Joint:GetCFrame() * CFrame.new(0,0,-0.5)
+        v.Part.CFrame = v.Joint:GetCFrame()
     end
 
     for i,v in ipairs(self.Bones) do
         v.Part.CFrame = v.Bone:GetCenterCFrame()
+        v.Part.Size = Vector3.new(0.1, 0.1, v.Bone.length)
     end
 end
 
