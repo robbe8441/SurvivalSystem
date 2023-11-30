@@ -3,12 +3,12 @@ local PromptService = game:GetService("ProximityPromptService")
 
 local Global = require(game.ReplicatedStorage.Modules.GlobalValues)
 local Input = require(script.Parent.input)
+
 local ItemTemp : any = game.ReplicatedStorage:WaitForChild("ItemTemp")
 local PickupPromptTemp = game.ReplicatedStorage:WaitForChild("PickupPrompt")
 
 local Plr = game.Players.LocalPlayer
 local Mouse = Plr:GetMouse()
-local Camera = workspace.CurrentCamera
 
 
 local PlayerGui = Plr:WaitForChild("PlayerGui")
@@ -90,7 +90,6 @@ function Module.UpdateGui()
     else
         TargetInfoFrame.Visible = false
     end
-
 end
 
 

@@ -15,6 +15,7 @@ function Joint.new(Part)
         Offset = CFrame.new(),
         Children = {},
         Parents = {},
+        _weight = 0,
     }
 
     local res = setmetatable(joint, Joint)
@@ -29,11 +30,11 @@ function Joint:GetCFrame()
 end
 
 
-function Joint:SetCFrame(Cf)
-    if not self.CanMove then return end
+function Joint:SetCFrame(Cf, weight)
+    if weight and weight < self._weight then return end
     if self.OnlyRotate then Cf = CFrame.new(self.Position.Position) * Cf.Rotation end
     self.Position = Cf
-    self.Part.CFrame = self.Position * self.Offset * CFrame.Angles(math.rad(90),0,0)
+    self.Part.CFrame = self.Position * self.Offset
 end
 
 return Joint

@@ -1,7 +1,7 @@
 export type JointClass = {
     __index : any,
     Part : BasePart,
-    CanMove : boolean,
+    _weight : number,
     OnlyRotate : boolean,
     Position : CFrame,
     Parent : JointClass,
@@ -12,7 +12,7 @@ export type JointClass = {
 
     new : (Part : BasePart) -> JointClass,
     GetCFrame : (self:JointClass) -> CFrame,
-    SetCFrame : (self:JointClass, CFrame) -> (),
+    SetCFrame : (self:JointClass, CFrame, number?) -> (),
 }
 
 export type BoneClass = {
@@ -23,10 +23,11 @@ export type BoneClass = {
 
     MinAngles : Vector3,
     MaxAngles : Vector3,
+    DefaultRotation : CFrame,
 
     new : (Joint0 :JointClass , Joint1 :JointClass) -> BoneClass,
-    UpdateP0 : (self:BoneClass) -> (),
-    UpdateP1 : (self:BoneClass) -> (),
+    UpdateP0 : (self:BoneClass, weight : number) -> (),
+    UpdateP1 : (self:BoneClass, weight : number) -> (),
     GetCenterCFrame : (self:BoneClass) -> CFrame,
     GetRootCFrame : (self:BoneClass) -> CFrame,
 }
@@ -37,6 +38,7 @@ export type TentacleClass = {
     RootJoint : JointClass,
     LastJoint : JointClass,
     length : number,
+    _weight : number,
     Bones : {BoneClass},
     TargetPosition : Vector3,
 
@@ -47,14 +49,16 @@ export type TentacleClass = {
 }
 
 
+
 export type AnimatorClass = {
     __index : any,
     Tentacles : {TentacleClass?},
 
-    LeftArm : TentacleClass?,
-    RightArm : TentacleClass?,
-    LeftLeg : TentacleClass?,
-    RightLeg : TentacleClass?,
+    FrontRight : TentacleClass?,
+    FrontLeft : TentacleClass?,
+    BackRight : TentacleClass?,
+    BackLeft : TentacleClass?,
+    Neck : TentacleClass?,
 
     new : () -> AnimatorClass,
     SetupRigToIK : (self:AnimatorClass, Model) -> (),

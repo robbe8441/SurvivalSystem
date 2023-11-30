@@ -8,6 +8,7 @@ function Tentacle.new()
         length = 0,
         Bones = {},
         RootJoint = nil,
+        _weight = 0,
         TargetPosition = Vector3.zero
     }
 
@@ -18,6 +19,7 @@ function Tentacle:AddBone(Bone)
     table.insert(self.Bones, Bone)
     self.length += Bone.length
     self.LastJoint = Bone.Connection1
+    Bone.Connection1._weight = self._weight
 end
 
 
@@ -43,12 +45,13 @@ function Tentacle:Update()
 
     for i=#self.Bones, 1, -1 do
         local v = self.Bones[i]
-        v:UpdateP0()
+        if v.Connection0._weight > self._weight then continue end
+        v:UpdateP0(self._weight)
     end
 
     for i=1, #self.Bones do
         local v = self.Bones[i]
-        v:UpdateP1()
+        v:UpdateP1(self._weight)
     end
 end
 

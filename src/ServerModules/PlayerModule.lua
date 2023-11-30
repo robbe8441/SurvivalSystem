@@ -12,7 +12,7 @@ Player.__index = Player
 Player.PlayerList = {}
 
 
-local SendDataRemote = game.ReplicatedStorage:FindFirstChild("UpdatePlayerDataRemote") or Instance.new("RemoteEvent")
+local SendDataRemote = game.ReplicatedStorage:FindFirstChild("UpdatePlayerDataRemote") or Instance.new("UnreliableRemoteEvent")
 SendDataRemote.Parent = game.ReplicatedStorage
 SendDataRemote.Name = "UpdatePlayerDataRemote"
 
@@ -84,8 +84,7 @@ end
 
 --------------------------------- // Functions \\ ---------------------------------
 
-function Player:OnUpdate(DeltaTime)
-    local PrevUpdate = table.clone(self)
+function Player:OnUpdate(DeltaTime)  -- // NEEDS TO BE OPTIMIZED !!!
     local Change = DeltaTime * self.Stress
 
     self.Food = math.clamp(self.Food - Change, 0, self.MaxFood)
@@ -99,14 +98,7 @@ function Player:OnUpdate(DeltaTime)
 
     local plr = game.Players:GetPlayerByUserId(self.UserId)
     if not plr then return end
-
-    local diff = {}
-    for i,v in self do
-        if PrevUpdate[i] ~= v then diff[i] = v end
-    end
-    
-    diff.Inventory = nil
-    SendDataRemote:FireClient(plr, diff)
+    SendDataRemote:FireClient(plr, self)
 end
 
 
