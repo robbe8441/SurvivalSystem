@@ -53,12 +53,10 @@ export type TentacleClass = {
 export type AnimatorClass = {
     __index : any,
     Tentacles : {TentacleClass?},
+    StoredValues : {[any] : any},
+    CallOnUpdate : () -> ()?,
 
-    FrontRight : TentacleClass?,
-    FrontLeft : TentacleClass?,
-    BackRight : TentacleClass?,
-    BackLeft : TentacleClass?,
-    Neck : TentacleClass?,
+    RootPart : BasePart,
 
     new : () -> AnimatorClass,
     SetupRigToIK : (self:AnimatorClass, Model) -> (),

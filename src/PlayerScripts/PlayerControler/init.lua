@@ -7,10 +7,8 @@ local GuiHandler = require(script.GuiHandler)
 local Networking = require(script.Networking)
 local Input = require(script.input)
 local Weather = require(script.Weather)
-local Animator = require(script.Animator)
 
 local Controller = {}
-Controller.Animator = Animator
 
 Controller.Cam = CameraModule.new()
 Controller.Cam:SetFirstPerson()

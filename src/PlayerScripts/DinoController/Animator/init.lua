@@ -1,6 +1,5 @@
 local JointModule = require(script.Joint)
 local BoneModule = require(script.Bones)
-local Debug = require(script.Debug)
 local TentacleModule = require(script.Tentacle)
 local classes = require(script.classes)
 
@@ -41,8 +40,6 @@ function Animator:GetTentacleByPartName(Name)
 end
 
 
-
-
 function Animator:SetupRigToIK(Character)
     local Joints = {}
     local Bones = {}
@@ -66,8 +63,8 @@ function Animator:SetupRigToIK(Character)
         v:Destroy()
     end
 
-    local Root = Character:WaitForChild("Root")
-    local tab = ConnectJoints(Joints[Root], {})
+    self.RootPart = Character:WaitForChild("RootPart")
+    local tab = ConnectJoints(Joints[self.RootPart], {})
     local len = #tab
 
     for i,tent in tab do
@@ -79,16 +76,9 @@ function Animator:SetupRigToIK(Character)
 
         Tentacle.TargetPosition = Tentacle.Bones[#Tentacle.Bones].Connection1.Position.Position
         Tentacle.RootJoint = Tentacle.Bones[1].Connection0
+        --Tentacle.RootJoint._weight = math.huge
         table.insert(self.Tentacles, Tentacle)
     end
-
-    self.Neck = self:GetTentacleByPartName("Head")
-    self.FrontRight = self:GetTentacleByPartName("FrontRight")
-    self.FrontLeft = self:GetTentacleByPartName("FrontLeft")
-    self.BackRight = self:GetTentacleByPartName("BackRight")
-    self.BackLeft = self:GetTentacleByPartName("BackLeft")
-    self.BackLeft._weight = math.huge
-
 
     for i,v in ipairs(self.Tentacles) do
         local Color = BrickColor.random()
@@ -100,17 +90,11 @@ end
 
 
 function Animator:Update()
-    Debug:Update()
-
+    if self.CallOnUpdate then self.CallOnUpdate() end
+    
     for _,v in ipairs(self.Tentacles) do
         v:Update()
     end
-
-    self.Neck.TargetPosition = workspace.HeadTarget.Position
-    self.FrontLeft.TargetPosition = workspace.LFTarget.Position
-    self.FrontRight.TargetPosition = workspace.RFTarget.Position
-    self.BackLeft.TargetPosition = workspace.LBTarget.Position
-    self.BackRight.TargetPosition = workspace.RBTarget.Position
 end
 
 
